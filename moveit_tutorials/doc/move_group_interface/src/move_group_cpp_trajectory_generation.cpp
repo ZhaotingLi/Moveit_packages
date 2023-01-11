@@ -121,6 +121,94 @@ int main(int argc, char** argv)
   visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to start the demo");
 
 
+  // (1) first plan the trajecoty to a goal without considering the obstacles
+  geometry_msgs::Pose target_pose2;
+  target_pose2.orientation.x=-0.9238795;
+  target_pose2.orientation.y = 0.3826834;
+  target_pose2.position.x = 0.4;
+  target_pose2.position.y = 0.0;
+  target_pose2.position.z = 0.55;
+  move_group_interface.setPoseTarget(target_pose2);
+
+  // Now, we call the planner to compute the plan and visualize it.
+  // Note that we are just planning, not asking move_group_interface
+  // to actually move the robot.
+  moveit::planning_interface::MoveGroupInterface::Plan my_plan;
+
+  move_group_interface.setMaxVelocityScalingFactor(0.075);
+  move_group_interface.setMaxAccelerationScalingFactor(0.075);
+  bool success = (move_group_interface.plan(my_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
+
+  ROS_INFO_NAMED("tutorial", "Visualizing plan 1 (pose goal) %s", success ? "" : "FAILED");
+
+  // Visualizing plans
+  // ^^^^^^^^^^^^^^^^^
+  // We can also visualize the plan as a line with markers in RViz.
+  ROS_INFO_NAMED("tutorial", "Visualizing plan 1 as trajectory line");
+  visual_tools.publishAxisLabeled(target_pose2, "pose1");
+  visual_tools.publishText(text_pose, "Pose Goal", rvt::WHITE, rvt::XLARGE);
+  visual_tools.publishTrajectoryLine(my_plan.trajectory_, joint_model_group);
+  visual_tools.trigger();
+  visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to excuate the trajectory");
+
+  // (2) excuate the planned trajectory
+  // wait for some time for me to be ready for putting elastic in front of the robot
+  ros::WallDuration(3.0).sleep();
+  move_group_interface.execute(my_plan);
+  // visual_tools.trigger();
+  // visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to stop the trajectory executation");
+
+
+  // (2.1) stop the robot during excuation 
+  // Finding: the 'next' button cannot be pressed until the robot finishes the trajectory
+  // move_group_interface.stop();
+
+  visual_tools.trigger();
+  visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to plan the trajectory to the start_pose");
+
+  
+  // (3) retrun to start pose
+  moveit::core::RobotStatePtr current_state = move_group_interface.getCurrentState();
+  //
+  // Next get the current set of joint values for the group.
+  std::vector<double> joint_group_positions;
+  current_state->copyJointGroupPositions(joint_model_group, joint_group_positions);
+
+  // Now, let's modify one of the joints, plan to the new joint space goal and visualize the plan.
+  joint_group_positions[0] = 0;
+  joint_group_positions[1] = -0.785398163397;
+  joint_group_positions[2] =  0;
+  joint_group_positions[3] =  -2.35619449019;
+  joint_group_positions[4] =  0;
+  joint_group_positions[5] =  1.57079632679;
+  joint_group_positions[6] =  0.78539816339;
+  move_group_interface.setJointValueTarget(joint_group_positions);
+
+  // We lower the allowed maximum velocity and acceleration to 5% of their maximum.
+  // The default values are 10% (0.1).
+  // Set your preferred defaults in the joint_limits.yaml file of your robot's moveit_config
+  // or set explicit factors in your code if you need your robot to move faster.
+  move_group_interface.setMaxVelocityScalingFactor(0.1);
+  move_group_interface.setMaxAccelerationScalingFactor(0.1);
+
+  success = (move_group_interface.plan(my_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
+  ROS_INFO_NAMED("tutorial", "Visualizing plan 2 (joint space goal) %s", success ? "" : "FAILED");
+
+  // Visualize the plan in RViz
+  visual_tools.deleteAllMarkers();
+  visual_tools.publishText(text_pose, "Joint Space Goal", rvt::WHITE, rvt::XLARGE);
+  visual_tools.publishTrajectoryLine(my_plan.trajectory_, joint_model_group);
+  visual_tools.trigger();
+  visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to excuate the trajectoroy");
+
+  // (4) excuate the planned trajectory
+  move_group_interface.execute(my_plan);
+
+  visual_tools.trigger();
+  visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to add obstacles");
+
+
+  // (5) add obstacles
   // Now let's define a collision object ROS message for the robot to avoid.
   moveit_msgs::CollisionObject collision_object;
   collision_object.header.frame_id = move_group_interface.getPlanningFrame();
@@ -132,22 +220,76 @@ int main(int argc, char** argv)
   shape_msgs::SolidPrimitive primitive;
   primitive.type = primitive.BOX;
   primitive.dimensions.resize(3);
-  primitive.dimensions[primitive.BOX_X] = 0.2;
+  primitive.dimensions[primitive.BOX_X] = 0.02;
   primitive.dimensions[primitive.BOX_Y] = 0.1;
   primitive.dimensions[primitive.BOX_Z] = 0.05;
 
   // Define a pose for the box (specified relative to frame_id)
   geometry_msgs::Pose box_pose;
   box_pose.orientation.w = 1.0;
-  box_pose.position.x = 0.45;
+  box_pose.position.x = 0.4;
   box_pose.position.y = 0.0;
-  box_pose.position.z = 0.65;
+  box_pose.position.z = 0.75;
 
   collision_object.primitives.push_back(primitive);
   collision_object.primitive_poses.push_back(box_pose);
   collision_object.operation = collision_object.ADD;
 
   std::vector<moveit_msgs::CollisionObject> collision_objects;
+  collision_objects.push_back(collision_object);
+
+
+  // add second obstacle for cabinet
+  // The id of the object is used to identify it.
+  collision_object.id = "box1";
+
+  // Define a box to add to the world.
+  // shape_msgs::SolidPrimitive primitive;
+  primitive.type = primitive.BOX;
+  primitive.dimensions.resize(3);
+  primitive.dimensions[primitive.BOX_X] = 0.3;
+  primitive.dimensions[primitive.BOX_Y] = 0.02;
+  primitive.dimensions[primitive.BOX_Z] = 0.8;
+
+  // Define a pose for the box (specified relative to frame_id)
+  // geometry_msgs::Pose box_pose;
+  box_pose.orientation.w = 1.0;
+  box_pose.position.x = 0.5;
+  box_pose.position.y = -0.2;
+  box_pose.position.z = 0.4;
+
+  collision_object.primitives.push_back(primitive);
+  collision_object.primitive_poses.push_back(box_pose);
+  collision_object.operation = collision_object.ADD;
+
+  // std::vector<moveit_msgs::CollisionObject> collision_objects;
+  collision_objects.push_back(collision_object);
+
+  // add third 
+  // add second obstacle
+  // The id of the object is used to identify it.
+  collision_object.id = "box1";
+
+  // Define a box to add to the world.
+  // shape_msgs::SolidPrimitive primitive;
+  primitive.type = primitive.BOX;
+  primitive.dimensions.resize(3);
+  primitive.dimensions[primitive.BOX_X] = 0.3;
+  primitive.dimensions[primitive.BOX_Y] = 0.02;
+  primitive.dimensions[primitive.BOX_Z] = 0.8;
+
+  // Define a pose for the box (specified relative to frame_id)
+  // geometry_msgs::Pose box_pose;
+  box_pose.orientation.w = 1.0;
+  box_pose.position.x = 0.5;
+  box_pose.position.y = 0.2;
+  box_pose.position.z = 0.4;
+
+  collision_object.primitives.push_back(primitive);
+  collision_object.primitive_poses.push_back(box_pose);
+  collision_object.operation = collision_object.ADD;
+
+  // std::vector<moveit_msgs::CollisionObject> collision_objects;
   collision_objects.push_back(collision_object);
 
   // Now, let's add the collision object into the world
@@ -160,9 +302,7 @@ int main(int argc, char** argv)
   visual_tools.trigger();
   visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to once the collision object appears in RViz");
 
-
-
-
+  // (6) Plan a trajectory to avoid the obstacles
   // .. _move_group_interface-planning-to-pose-goal:
   //
   // Planning to a Pose goal
@@ -180,9 +320,10 @@ int main(int argc, char** argv)
   // Now, we call the planner to compute the plan and visualize it.
   // Note that we are just planning, not asking move_group_interface
   // to actually move the robot.
-  moveit::planning_interface::MoveGroupInterface::Plan my_plan;
-
-  bool success = (move_group_interface.plan(my_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
+  // moveit::planning_interface::MoveGroupInterface::Plan my_plan;
+  move_group_interface.setMaxVelocityScalingFactor(0.075);
+  move_group_interface.setMaxAccelerationScalingFactor(0.075);
+  success = (move_group_interface.plan(my_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
 
   ROS_INFO_NAMED("tutorial", "Visualizing plan 1 (pose goal) %s", success ? "" : "FAILED");
 
@@ -194,11 +335,11 @@ int main(int argc, char** argv)
   visual_tools.publishText(text_pose, "Pose Goal", rvt::WHITE, rvt::XLARGE);
   visual_tools.publishTrajectoryLine(my_plan.trajectory_, joint_model_group);
   visual_tools.trigger();
-  visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to continue the demo");
+  visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to execute the trajectory");
 
-  // Finally, to execute the trajectory stored in my_plan, you could use the following method call:
-  // Note that this can lead to problems if the robot moved in the meanwhile.
-  // move_group_interface.execute(my_plan);
+
+  //(7) excuate the plan
+  move_group_interface.execute(my_plan);
 
   // Moving to a pose goal
   // ^^^^^^^^^^^^^^^^^^^^^

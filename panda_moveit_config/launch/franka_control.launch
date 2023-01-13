@@ -6,6 +6,11 @@
   <!-- Launch real-robot control -->
   <include file="$(find franka_control)/launch/franka_control.launch" pass_all_args="true" />
 
+  <!-- Launch the torque observer -->
+  <arg name="arm_id" default="panda"/>
+  <rosparam command="load" file="$(find franka_example_controllers)/config/franka_example_controllers.yaml" subst_value="true" />
+  <node name="tauObserver_controller_spawner" pkg="controller_manager" type="spawner" respawn="false" output="screen"  args="external_torque_observer"/>
+
   <!-- By default use joint position controllers -->
   <arg name="transmission" default="position" />
   <!-- Start ROS controllers -->

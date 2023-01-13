@@ -153,9 +153,11 @@ int main(int argc, char** argv)
 
   // (2) excuate the planned trajectory
   // wait for some time for me to be ready for putting elastic in front of the robot
-  ros::WallDuration(3.0).sleep();
-  move_group_interface.execute(my_plan);
-  move_group_interface.move();
+  ros::WallDuration(5.0).sleep();
+  if(success){
+    move_group_interface.execute(my_plan);
+  }
+  // move_group_interface.move();
   // visual_tools.trigger();
   // visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to stop the trajectory executation");
 
@@ -164,8 +166,10 @@ int main(int argc, char** argv)
   // Finding: the 'next' button cannot be pressed until the robot finishes the trajectory
   // move_group_interface.stop();
 
-  visual_tools.trigger();
-  visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to plan the trajectory to the start_pose");
+  // visual_tools.trigger();
+  // visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to plan the trajectory to the start_pose");
+  ROS_INFO_NAMED("tutorial", "plan the trajectory to the start_pose");
+  // ros::WallDuration(3.0).sleep();
 
   
   // (3) retrun to start pose
@@ -199,15 +203,23 @@ int main(int argc, char** argv)
   visual_tools.deleteAllMarkers();
   visual_tools.publishText(text_pose, "Joint Space Goal", rvt::WHITE, rvt::XLARGE);
   visual_tools.publishTrajectoryLine(my_plan.trajectory_, joint_model_group);
-  visual_tools.trigger();
-  visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to excuate the trajectoroy");
+  
+  // visual_tools.trigger();
+  // visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to excuate the trajectoroy");
+
+  ROS_INFO_NAMED("tutorial", "excuate the trajectory to the start_pose");
+  // ros::WallDuration(3.0).sleep();
 
   // (4) excuate the planned trajectory
-  move_group_interface.execute(my_plan);
-  move_group_interface.move();
+  if(success){
+    move_group_interface.execute(my_plan);
+  }
+  // move_group_interface.move();
 
-  visual_tools.trigger();
-  visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to add obstacles");
+  // visual_tools.trigger();
+  // visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to add obstacles");
+  ROS_INFO_NAMED("tutorial", "add obstacles");
+  // ros::WallDuration(3.0).sleep();
 
 
   // (5) add obstacles
@@ -257,7 +269,7 @@ int main(int argc, char** argv)
   // geometry_msgs::Pose box_pose;
   box_pose.orientation.w = 1.0;
   box_pose.position.x = 0.5;
-  box_pose.position.y = -0.25;
+  box_pose.position.y = -0.3;
   box_pose.position.z = 0.4;
 
   collision_object.primitives.push_back(primitive);
@@ -283,7 +295,7 @@ int main(int argc, char** argv)
   // geometry_msgs::Pose box_pose;
   box_pose.orientation.w = 1.0;
   box_pose.position.x = 0.5;
-  box_pose.position.y = 0.25;
+  box_pose.position.y = 0.3;
   box_pose.position.z = 0.4;
 
   collision_object.primitives.push_back(primitive);
@@ -300,8 +312,10 @@ int main(int argc, char** argv)
 
   // Show text in RViz of status and wait for MoveGroup to receive and process the collision object message
   visual_tools.publishText(text_pose, "Add object", rvt::WHITE, rvt::XLARGE);
-  visual_tools.trigger();
-  visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to once the collision object appears in RViz");
+  // visual_tools.trigger();
+  // visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to once the collision object appears in RViz");
+  ROS_INFO_NAMED("tutorial", "Plan the path");
+  ros::WallDuration(3.0).sleep();
 
   // (6) Plan a trajectory to avoid the obstacles
   // .. _move_group_interface-planning-to-pose-goal:
@@ -335,13 +349,17 @@ int main(int argc, char** argv)
   visual_tools.publishAxisLabeled(target_pose1, "pose1");
   visual_tools.publishText(text_pose, "Pose Goal", rvt::WHITE, rvt::XLARGE);
   visual_tools.publishTrajectoryLine(my_plan.trajectory_, joint_model_group);
-  visual_tools.trigger();
-  visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to execute the trajectory");
+  // visual_tools.trigger();
+  // visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to execute the trajectory");
+  ROS_INFO_NAMED("tutorial", "excuate the  final path");
+  // ros::WallDuration(6.0).sleep();
 
 
   //(7) excuate the plan
-  move_group_interface.execute(my_plan);
-  move_group_interface.move();
+  if(success){
+    move_group_interface.execute(my_plan);
+  }
+  // move_group_interface.move();
 
   // Moving to a pose goal
   // ^^^^^^^^^^^^^^^^^^^^^

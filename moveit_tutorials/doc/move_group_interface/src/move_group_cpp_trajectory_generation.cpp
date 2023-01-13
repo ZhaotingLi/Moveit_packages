@@ -155,6 +155,7 @@ int main(int argc, char** argv)
   // wait for some time for me to be ready for putting elastic in front of the robot
   ros::WallDuration(3.0).sleep();
   move_group_interface.execute(my_plan);
+  move_group_interface.move();
   // visual_tools.trigger();
   // visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to stop the trajectory executation");
 
@@ -203,6 +204,7 @@ int main(int argc, char** argv)
 
   // (4) excuate the planned trajectory
   move_group_interface.execute(my_plan);
+  move_group_interface.move();
 
   visual_tools.trigger();
   visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to add obstacles");
@@ -255,7 +257,7 @@ int main(int argc, char** argv)
   // geometry_msgs::Pose box_pose;
   box_pose.orientation.w = 1.0;
   box_pose.position.x = 0.5;
-  box_pose.position.y = -0.2;
+  box_pose.position.y = -0.25;
   box_pose.position.z = 0.4;
 
   collision_object.primitives.push_back(primitive);
@@ -266,7 +268,6 @@ int main(int argc, char** argv)
   collision_objects.push_back(collision_object);
 
   // add third 
-  // add second obstacle
   // The id of the object is used to identify it.
   collision_object.id = "box1";
 
@@ -282,7 +283,7 @@ int main(int argc, char** argv)
   // geometry_msgs::Pose box_pose;
   box_pose.orientation.w = 1.0;
   box_pose.position.x = 0.5;
-  box_pose.position.y = 0.2;
+  box_pose.position.y = 0.25;
   box_pose.position.z = 0.4;
 
   collision_object.primitives.push_back(primitive);
@@ -340,6 +341,7 @@ int main(int argc, char** argv)
 
   //(7) excuate the plan
   move_group_interface.execute(my_plan);
+  move_group_interface.move();
 
   // Moving to a pose goal
   // ^^^^^^^^^^^^^^^^^^^^^

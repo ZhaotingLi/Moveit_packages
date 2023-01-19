@@ -1,16 +1,30 @@
 controller_list:
-  - name: $(arg transmission)_joint_trajectory_controller
+  # - name: $(arg transmission)_joint_trajectory_controller
+  #   action_ns: follow_joint_trajectory
+  #   type: FollowJointTrajectory
+  #   default: True
+  #   joints:
+  #     - $(arg arm_id)_joint1
+  #     - $(arg arm_id)_joint2
+  #     - $(arg arm_id)_joint3
+  #     - $(arg arm_id)_joint4
+  #     - $(arg arm_id)_joint5
+  #     - $(arg arm_id)_joint6
+  #     - $(arg arm_id)_joint7
+  - name: contact_aware_joint_trajectory_controller
     action_ns: follow_joint_trajectory
     type: FollowJointTrajectory
+    publish_rate: 100
     default: True
     joints:
-      - $(arg arm_id)_joint1
-      - $(arg arm_id)_joint2
-      - $(arg arm_id)_joint3
-      - $(arg arm_id)_joint4
-      - $(arg arm_id)_joint5
-      - $(arg arm_id)_joint6
-      - $(arg arm_id)_joint7
+        - $(arg arm_id)_joint1
+        - $(arg arm_id)_joint2
+        - $(arg arm_id)_joint3
+        - $(arg arm_id)_joint4
+        - $(arg arm_id)_joint5
+        - $(arg arm_id)_joint6
+        - $(arg arm_id)_joint7
+
   - name: franka_gripper
     action_ns: gripper_action
     type: GripperCommand

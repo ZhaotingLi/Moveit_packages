@@ -45,8 +45,28 @@
 
 #include <moveit_visual_tools/moveit_visual_tools.h>
 
+#include "geometry_msgs/Wrench.h"
+#include <Eigen/Core>
 // The circle constant tau = 2*pi. One tau is one rotation in radians.
 const double tau = 2 * M_PI;
+
+// to be modified, this should also be included in the low level control part
+// to do: add a .h file and a class to store the obstacles info
+Eigen::Vector3d ext_force;
+Eigen::Vector3d contact_position;
+
+// need to check whether the obstacle has already in this set before saving the new one
+std::vector<Eigen::Vector3d> obstacle_set;  // contain the estimated center of detected obstacles 
+
+
+void callback(const geometry_msgs::Wrench& msg){
+  ext_force << msg.force.x, msg.force.y, msg.force.z;
+  contact_position << msg.torque.x, msg.torque.y, msg.torque.z;
+  if(ext_force.norm() > 10){
+    obstacle_set.push_back(contact_position);
+    // also publish to the topic "effort_joint_trajectory_controller/command" to stop current plan excuation, can be done in another node
+  }
+}
 
 int main(int argc, char** argv)
 {
@@ -56,6 +76,9 @@ int main(int argc, char** argv)
   // ROS spinning must be running for the MoveGroupInterface to get information
   // about the robot's state. One way to do this is to start an AsyncSpinner
   // beforehand.
+
+  ros::Subscriber sub_haptic = node_handle.subscribe("/estimated_ext_force_data", 100, callback);
+
   ros::AsyncSpinner spinner(1);
   spinner.start();
 
@@ -204,8 +227,8 @@ int main(int argc, char** argv)
   visual_tools.publishText(text_pose, "Joint Space Goal", rvt::WHITE, rvt::XLARGE);
   visual_tools.publishTrajectoryLine(my_plan.trajectory_, joint_model_group);
   
-  // visual_tools.trigger();
-  // visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to excuate the trajectoroy");
+  visual_tools.trigger();
+  visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to excuate the trajectoroy");
 
   ROS_INFO_NAMED("tutorial", "excuate the trajectory to the start_pose");
   // ros::WallDuration(3.0).sleep();
@@ -349,8 +372,8 @@ int main(int argc, char** argv)
   visual_tools.publishAxisLabeled(target_pose1, "pose1");
   visual_tools.publishText(text_pose, "Pose Goal", rvt::WHITE, rvt::XLARGE);
   visual_tools.publishTrajectoryLine(my_plan.trajectory_, joint_model_group);
-  // visual_tools.trigger();
-  // visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to execute the trajectory");
+  visual_tools.trigger();
+  visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to execute the trajectory");
   ROS_INFO_NAMED("tutorial", "excuate the  final path");
   // ros::WallDuration(6.0).sleep();
 

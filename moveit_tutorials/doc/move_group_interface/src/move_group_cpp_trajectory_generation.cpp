@@ -190,7 +190,7 @@ int main(int argc, char** argv)
   // move_group_interface.stop();
 
   // visual_tools.trigger();
-  // visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to plan the trajectory to the start_pose");
+  visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to plan the trajectory to the start_pose");
   ROS_INFO_NAMED("tutorial", "plan the trajectory to the start_pose");
   // ros::WallDuration(3.0).sleep();
 

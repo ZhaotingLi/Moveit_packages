@@ -9,12 +9,12 @@
   <!-- Launch the torque observer -->
   <arg name="arm_id" default="panda"/>
   <rosparam command="load" file="$(find franka_example_controllers)/config/franka_example_controllers.yaml" subst_value="true" />
-  <node name="tauObserver_controller_spawner" pkg="controller_manager" type="spawner" respawn="false" output="screen"  args="external_torque_observer"/>
+  <node name="tauObserver_controller_spawner" pkg="controller_manager" type="spawner" respawn="false" output="screen"  args="external_torque_observer contact_aware_joint_trajectory_controller"/>
 
   <!-- By default use joint position controllers -->
   <arg name="transmission" default="position" />
   <!-- Start ROS controllers -->
-  <include file="$(dirname)/ros_controllers.launch" pass_all_args="true" />
+  <!-- <include file="$(dirname)/ros_controllers.launch" pass_all_args="true" /> -->
 
   <!-- as well as MoveIt demo -->
   <include file="$(dirname)/demo.launch" pass_all_args="true">

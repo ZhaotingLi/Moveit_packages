@@ -1,6 +1,7 @@
 <launch>
 
   <node name="move_group_cpp_trajectory_generation" pkg="moveit_tutorials" type="move_group_cpp_trajectory_generation" respawn="false" output="screen">
+  <rosparam command="load" file="$(find panda_moveit_config)/config/ompl_planning.yaml"/>
   </node>
 
 </launch>

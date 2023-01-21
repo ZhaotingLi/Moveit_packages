@@ -54,6 +54,9 @@ const double tau = 2 * M_PI;
 // to do: add a .h file and a class to store the obstacles info
 Eigen::Vector3d ext_force;
 Eigen::Vector3d contact_position;
+bool is_contact_happening = false;
+bool is_previous_contact_happening = false;
+bool is_contact_saved = false;
 
 // need to check whether the obstacle has already in this set before saving the new one
 std::vector<Eigen::Vector3d> obstacle_set;  // contain the estimated center of detected obstacles 
@@ -62,9 +65,23 @@ std::vector<Eigen::Vector3d> obstacle_set;  // contain the estimated center of d
 void callback(const geometry_msgs::Wrench& msg){
   ext_force << msg.force.x, msg.force.y, msg.force.z;
   contact_position << msg.torque.x, msg.torque.y, msg.torque.z;
+  is_previous_contact_happening = is_contact_happening;
+  if(ext_force.norm() > 2){
+    is_contact_happening = true;
+  }else{
+    is_contact_happening = false;
+  }
   if(ext_force.norm() > 10){
-    obstacle_set.push_back(contact_position);
+    if(!is_contact_saved){
+      obstacle_set.push_back(contact_position);
+      is_contact_saved = true;
+    }
     // also publish to the topic "effort_joint_trajectory_controller/command" to stop current plan excuation, can be done in another node
+  }
+
+  // contact just happen
+  if(!is_previous_contact_happening && is_contact_happening){
+    is_contact_saved = false;
   }
 }
 
@@ -299,7 +316,7 @@ int main(int argc, char** argv)
   // (5) add obstacles
   // Now let's define a collision object ROS message for the robot to avoid.
   // moveit_msgs::CollisionObject collision_object;
-  collision_object.header.frame_id = move_group_interface.getPlanningFrame();
+  std::cout<<"size of saved obstacles: " << obstacle_set.size() << std::endl;
   // The id of the object is used to identify it.
   collision_object.id = "box1";
 
@@ -311,12 +328,18 @@ int main(int argc, char** argv)
   primitive.dimensions[primitive.BOX_Y] = 0.1;
   primitive.dimensions[primitive.BOX_Z] = 0.05;
 
-  // Define a pose for the box (specified relative to frame_id)
-  // geometry_msgs::Pose box_pose;
-  box_pose.orientation.w = 1.0;
-  box_pose.position.x = 0.4;
-  box_pose.position.y = 0.0;
-  box_pose.position.z = 0.75;
+  if(obstacle_set.size() > 0){
+    box_pose.orientation.w = 1.0;
+    box_pose.position.x = obstacle_set[0][0] + primitive.dimensions[primitive.BOX_X]/2;
+    box_pose.position.y = obstacle_set[0][1];
+    box_pose.position.z = obstacle_set[0][2];
+  }else{
+    box_pose.orientation.w = 1.0;
+    box_pose.position.x = 0.4;
+    box_pose.position.y = 0.0;
+    box_pose.position.z = 0.75;
+  }
+
 
   collision_object.primitives.push_back(primitive);
   collision_object.primitive_poses.push_back(box_pose);

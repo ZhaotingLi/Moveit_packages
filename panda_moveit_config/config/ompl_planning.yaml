@@ -1,5 +1,6 @@
 planner_configs:
   AnytimePathShortening:
+    optimization_objective: MechanicalWorkOptimizationObjective
     type: geometric::AnytimePathShortening
     shortcut: true  # Attempt to shortcut all new solution paths
     hybridize: true  # Compute hybrid solution trajectories

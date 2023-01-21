@@ -1,3 +1,13 @@
 {
-    "cmake.sourceDirectory": "${workspaceFolder}/geometric_shapes"
+    "cmake.sourceDirectory": "${workspaceFolder}/geometric_shapes",
+    "files.associations": {
+        "*.tcc": "cpp",
+        "deque": "cpp",
+        "list": "cpp",
+        "string": "cpp",
+        "vector": "cpp",
+        "hash_map": "cpp",
+        "hash_set": "cpp",
+        "slist": "cpp"
+    }
 }

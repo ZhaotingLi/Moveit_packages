@@ -143,14 +143,65 @@ int main(int argc, char** argv)
   // ^^^^^^^^^^^^^^^^^^^^^^^^^
   visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to start the demo");
 
+  moveit_msgs::CollisionObject collision_object;
+  collision_object.header.frame_id = move_group_interface.getPlanningFrame();
+    // add second obstacle for cabinet
+  // The id of the object is used to identify it.
+  collision_object.id = "box1";
+
+  // Define a box to add to the world.
+  shape_msgs::SolidPrimitive primitive;
+  primitive.type = primitive.BOX;
+  primitive.dimensions.resize(3);
+  primitive.dimensions[primitive.BOX_X] = 0.3;
+  primitive.dimensions[primitive.BOX_Y] = 0.02;
+  primitive.dimensions[primitive.BOX_Z] = 0.8;
+
+  // Define a pose for the box (specified relative to frame_id)
+  geometry_msgs::Pose box_pose;
+  box_pose.orientation.w = 1.0;
+  box_pose.position.x = 0.5;
+  box_pose.position.y = -0.3;
+  box_pose.position.z = 0.4;
+
+  collision_object.primitives.push_back(primitive);
+  collision_object.primitive_poses.push_back(box_pose);
+  collision_object.operation = collision_object.ADD;
+
+  std::vector<moveit_msgs::CollisionObject> collision_objects;
+  collision_objects.push_back(collision_object);
+
+  // add third 
+  // The id of the object is used to identify it.
+  collision_object.id = "box1";
+  // Define a pose for the box (specified relative to frame_id)
+  // geometry_msgs::Pose box_pose;
+  box_pose.orientation.w = 1.0;
+  box_pose.position.x = 0.5;
+  box_pose.position.y = 0.3;
+  box_pose.position.z = 0.4;
+
+  collision_object.primitives.push_back(primitive);
+  collision_object.primitive_poses.push_back(box_pose);
+  collision_object.operation = collision_object.ADD;
+
+  // std::vector<moveit_msgs::CollisionObject> collision_objects;
+  collision_objects.push_back(collision_object);
+
+  // Now, let's add the collision object into the world
+  // (using a vector that could contain additional objects)
+  ROS_INFO_NAMED("tutorial", "Add an object into the world");
+  planning_scene_interface.addCollisionObjects(collision_objects);
+  // Show text in RViz of status and wait for MoveGroup to receive and process the collision object message
+  visual_tools.publishText(text_pose, "Add object", rvt::WHITE, rvt::XLARGE);
 
   // (1) first plan the trajecoty to a goal without considering the obstacles
   geometry_msgs::Pose target_pose2;
   target_pose2.orientation.x=-0.9238795;
   target_pose2.orientation.y = 0.3826834;
-  target_pose2.position.x = 0.4;
+  target_pose2.position.x = 0.5;
   target_pose2.position.y = 0.0;
-  target_pose2.position.z = 0.55;
+  target_pose2.position.z = 0.49;
   move_group_interface.setPoseTarget(target_pose2);
 
   // Now, we call the planner to compute the plan and visualize it.
@@ -237,7 +288,7 @@ int main(int argc, char** argv)
   if(success){
     move_group_interface.execute(my_plan);
   }
-  // move_group_interface.move();
+  // // move_group_interface.move();
 
   // visual_tools.trigger();
   // visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to add obstacles");
@@ -247,14 +298,13 @@ int main(int argc, char** argv)
 
   // (5) add obstacles
   // Now let's define a collision object ROS message for the robot to avoid.
-  moveit_msgs::CollisionObject collision_object;
+  // moveit_msgs::CollisionObject collision_object;
   collision_object.header.frame_id = move_group_interface.getPlanningFrame();
-
   // The id of the object is used to identify it.
   collision_object.id = "box1";
 
   // Define a box to add to the world.
-  shape_msgs::SolidPrimitive primitive;
+  // shape_msgs::SolidPrimitive primitive;
   primitive.type = primitive.BOX;
   primitive.dimensions.resize(3);
   primitive.dimensions[primitive.BOX_X] = 0.02;
@@ -262,7 +312,7 @@ int main(int argc, char** argv)
   primitive.dimensions[primitive.BOX_Z] = 0.05;
 
   // Define a pose for the box (specified relative to frame_id)
-  geometry_msgs::Pose box_pose;
+  // geometry_msgs::Pose box_pose;
   box_pose.orientation.w = 1.0;
   box_pose.position.x = 0.4;
   box_pose.position.y = 0.0;
@@ -272,66 +322,18 @@ int main(int argc, char** argv)
   collision_object.primitive_poses.push_back(box_pose);
   collision_object.operation = collision_object.ADD;
 
-  std::vector<moveit_msgs::CollisionObject> collision_objects;
-  collision_objects.push_back(collision_object);
-
-
-  // add second obstacle for cabinet
-  // The id of the object is used to identify it.
-  collision_object.id = "box1";
-
-  // Define a box to add to the world.
-  // shape_msgs::SolidPrimitive primitive;
-  primitive.type = primitive.BOX;
-  primitive.dimensions.resize(3);
-  primitive.dimensions[primitive.BOX_X] = 0.3;
-  primitive.dimensions[primitive.BOX_Y] = 0.02;
-  primitive.dimensions[primitive.BOX_Z] = 0.8;
-
-  // Define a pose for the box (specified relative to frame_id)
-  // geometry_msgs::Pose box_pose;
-  box_pose.orientation.w = 1.0;
-  box_pose.position.x = 0.5;
-  box_pose.position.y = -0.3;
-  box_pose.position.z = 0.4;
-
-  collision_object.primitives.push_back(primitive);
-  collision_object.primitive_poses.push_back(box_pose);
-  collision_object.operation = collision_object.ADD;
-
-  // std::vector<moveit_msgs::CollisionObject> collision_objects;
-  collision_objects.push_back(collision_object);
-
-  // add third 
-  // The id of the object is used to identify it.
-  collision_object.id = "box1";
-
-  // Define a box to add to the world.
-  // shape_msgs::SolidPrimitive primitive;
-  primitive.type = primitive.BOX;
-  primitive.dimensions.resize(3);
-  primitive.dimensions[primitive.BOX_X] = 0.3;
-  primitive.dimensions[primitive.BOX_Y] = 0.02;
-  primitive.dimensions[primitive.BOX_Z] = 0.8;
-
-  // Define a pose for the box (specified relative to frame_id)
-  // geometry_msgs::Pose box_pose;
-  box_pose.orientation.w = 1.0;
-  box_pose.position.x = 0.5;
-  box_pose.position.y = 0.3;
-  box_pose.position.z = 0.4;
-
-  collision_object.primitives.push_back(primitive);
-  collision_object.primitive_poses.push_back(box_pose);
-  collision_object.operation = collision_object.ADD;
-
-  // std::vector<moveit_msgs::CollisionObject> collision_objects;
-  collision_objects.push_back(collision_object);
-
-  // Now, let's add the collision object into the world
-  // (using a vector that could contain additional objects)
+  std::vector<moveit_msgs::CollisionObject> collision_objects_estiamted;
+  collision_objects_estiamted.push_back(collision_object);
   ROS_INFO_NAMED("tutorial", "Add an object into the world");
-  planning_scene_interface.addCollisionObjects(collision_objects);
+  planning_scene_interface.addCollisionObjects(collision_objects_estiamted);
+
+  // remove obstacles example
+  // Now, let's remove the objects from the world.
+  // ROS_INFO_NAMED("tutorial", "Remove the objects from the world");
+  // std::vector<std::string> object_ids;
+  // object_ids.push_back(collision_object.id);
+  // object_ids.push_back(object_to_attach.id);
+  // planning_scene_interface.removeCollisionObjects(object_ids);
 
   // Show text in RViz of status and wait for MoveGroup to receive and process the collision object message
   visual_tools.publishText(text_pose, "Add object", rvt::WHITE, rvt::XLARGE);

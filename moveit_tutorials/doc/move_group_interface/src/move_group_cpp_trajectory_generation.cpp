@@ -278,13 +278,20 @@ int main(int argc, char** argv)
   // joint_group_positions[4] =  10 * 3.1415926 / 180;
   // joint_group_positions[5] =  110 * 3.1415926/180;
   // joint_group_positions[6] =  26 *3.1415926/180;
-  joint_group_positions[0] = 16 * 3.1415926 / 180;
-  joint_group_positions[1] = 25 * 3.1415926/180;
-  joint_group_positions[2] =  -25 * 3.1415926/180;
-  joint_group_positions[3] =  -106 * 3.1415926/180;
-  joint_group_positions[4] =  13 * 3.1415926 / 180;
-  joint_group_positions[5] =  204 * 3.1415926/180;
-  joint_group_positions[6] =  39 *3.1415926/180;
+  // joint_group_positions[0] = 16 * 3.1415926 / 180;
+  // joint_group_positions[1] = 25 * 3.1415926/180;
+  // joint_group_positions[2] =  -25 * 3.1415926/180;
+  // joint_group_positions[3] =  -106 * 3.1415926/180;
+  // joint_group_positions[4] =  13 * 3.1415926 / 180;
+  // joint_group_positions[5] =  204 * 3.1415926/180;
+  // joint_group_positions[6] =  39 *3.1415926/180;
+  joint_group_positions[0] = -87 * 3.1415926 / 180;
+  joint_group_positions[1] = -2 * 3.1415926/180;
+  joint_group_positions[2] =  11 * 3.1415926/180;
+  joint_group_positions[3] =  -107 * 3.1415926/180;
+  joint_group_positions[4] =  0 * 3.1415926 / 180;
+  joint_group_positions[5] =  106 * 3.1415926/180;
+  joint_group_positions[6] =  59 *3.1415926/180;
   move_group_interface.setJointValueTarget(joint_group_positions);
 
   // We lower the allowed maximum velocity and acceleration to 5% of their maximum.
@@ -323,54 +330,54 @@ int main(int argc, char** argv)
   // (5) add obstacles
   // Now let's define a collision object ROS message for the robot to avoid.
   // moveit_msgs::CollisionObject collision_object;
-  std::cout<<"size of saved obstacles: " << obstacle_set.size() << std::endl;
-  // The id of the object is used to identify it.
-  collision_object.id = "box1";
+  // std::cout<<"size of saved obstacles: " << obstacle_set.size() << std::endl;
+  // // The id of the object is used to identify it.
+  // collision_object.id = "box1";
 
-  // Define a box to add to the world.
-  // shape_msgs::SolidPrimitive primitive;
-  primitive.type = primitive.BOX;
-  primitive.dimensions.resize(3);
-  primitive.dimensions[primitive.BOX_X] = 0.02;
-  primitive.dimensions[primitive.BOX_Y] = 0.1;
-  primitive.dimensions[primitive.BOX_Z] = 0.02;
+  // // Define a box to add to the world.
+  // // shape_msgs::SolidPrimitive primitive;
+  // primitive.type = primitive.BOX;
+  // primitive.dimensions.resize(3);
+  // primitive.dimensions[primitive.BOX_X] = 0.02;
+  // primitive.dimensions[primitive.BOX_Y] = 0.1;
+  // primitive.dimensions[primitive.BOX_Z] = 0.02;
 
-  if(obstacle_set.size() > 0){
-    box_pose.orientation.w = 1.0;
-    box_pose.position.x = obstacle_set[0][0] + primitive.dimensions[primitive.BOX_X] + 0.01;
-    box_pose.position.y = obstacle_set[0][1];
-    box_pose.position.z = obstacle_set[0][2] +  primitive.dimensions[primitive.BOX_Z]/2;
-  }else{
-    box_pose.orientation.w = 1.0;
-    box_pose.position.x = 0.4;
-    box_pose.position.y = 0.0;
-    box_pose.position.z = 0.75;
-  }
+  // if(obstacle_set.size() > 0){
+  //   box_pose.orientation.w = 1.0;
+  //   box_pose.position.x = obstacle_set[0][0] + primitive.dimensions[primitive.BOX_X] + 0.01;
+  //   box_pose.position.y = obstacle_set[0][1];
+  //   box_pose.position.z = obstacle_set[0][2] +  primitive.dimensions[primitive.BOX_Z]/2;
+  // }else{
+  //   box_pose.orientation.w = 1.0;
+  //   box_pose.position.x = 0.4;
+  //   box_pose.position.y = 0.0;
+  //   box_pose.position.z = 0.75;
+  // }
 
 
-  collision_object.primitives.push_back(primitive);
-  collision_object.primitive_poses.push_back(box_pose);
-  collision_object.operation = collision_object.ADD;
+  // collision_object.primitives.push_back(primitive);
+  // collision_object.primitive_poses.push_back(box_pose);
+  // collision_object.operation = collision_object.ADD;
 
-  std::vector<moveit_msgs::CollisionObject> collision_objects_estiamted;
-  collision_objects_estiamted.push_back(collision_object);
-  ROS_INFO_NAMED("tutorial", "Add an object into the world");
-  planning_scene_interface.addCollisionObjects(collision_objects_estiamted);
+  // std::vector<moveit_msgs::CollisionObject> collision_objects_estiamted;
+  // collision_objects_estiamted.push_back(collision_object);
+  // ROS_INFO_NAMED("tutorial", "Add an object into the world");
+  // planning_scene_interface.addCollisionObjects(collision_objects_estiamted);
 
-  // remove obstacles example
-  // Now, let's remove the objects from the world.
-  // ROS_INFO_NAMED("tutorial", "Remove the objects from the world");
-  // std::vector<std::string> object_ids;
-  // object_ids.push_back(collision_object.id);
-  // object_ids.push_back(object_to_attach.id);
-  // planning_scene_interface.removeCollisionObjects(object_ids);
+  // // remove obstacles example
+  // // Now, let's remove the objects from the world.
+  // // ROS_INFO_NAMED("tutorial", "Remove the objects from the world");
+  // // std::vector<std::string> object_ids;
+  // // object_ids.push_back(collision_object.id);
+  // // object_ids.push_back(object_to_attach.id);
+  // // planning_scene_interface.removeCollisionObjects(object_ids);
 
-  // Show text in RViz of status and wait for MoveGroup to receive and process the collision object message
-  visual_tools.publishText(text_pose, "Add object", rvt::WHITE, rvt::XLARGE);
-  // visual_tools.trigger();
-  // visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to once the collision object appears in RViz");
-  ROS_INFO_NAMED("tutorial", "Plan the path");
-  ros::WallDuration(1.0).sleep();
+  // // Show text in RViz of status and wait for MoveGroup to receive and process the collision object message
+  // visual_tools.publishText(text_pose, "Add object", rvt::WHITE, rvt::XLARGE);
+  // // visual_tools.trigger();
+  // // visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to once the collision object appears in RViz");
+  // ROS_INFO_NAMED("tutorial", "Plan the path");
+  // ros::WallDuration(1.0).sleep();
 
   // (6) Plan a trajectory to avoid the obstacles
   // .. _move_group_interface-planning-to-pose-goal:
@@ -380,44 +387,44 @@ int main(int argc, char** argv)
   // We can plan a motion for this group to a desired pose for the
   // end-effector.
   // Important! read the current state and send it to moveit. otherwise there will be the error Invalid Trajectory: start point deviates from current robot state more than 0.01 joint 'panda_joint2': expected: -0.569261, current: -0.554642
-  robot_state::RobotState current_state2(*move_group_interface.getCurrentState());
-  move_group_interface.setStartState(current_state2);
+  // robot_state::RobotState current_state2(*move_group_interface.getCurrentState());
+  // move_group_interface.setStartState(current_state2);
 
-  geometry_msgs::Pose target_pose1;
-  target_pose1.orientation.x=-0.9238795;
-  target_pose1.orientation.y = 0.3826834;
-  target_pose1.position.x = 0.5;
-  target_pose1.position.y = 0.0;
-  target_pose1.position.z = 0.49;
-  move_group_interface.setPoseTarget(target_pose1);
+  // geometry_msgs::Pose target_pose1;
+  // target_pose1.orientation.x=-0.9238795;
+  // target_pose1.orientation.y = 0.3826834;
+  // target_pose1.position.x = 0.5;
+  // target_pose1.position.y = 0.0;
+  // target_pose1.position.z = 0.49;
+  // move_group_interface.setPoseTarget(target_pose1);
 
-  // Now, we call the planner to compute the plan and visualize it.
-  // Note that we are just planning, not asking move_group_interface
-  // to actually move the robot.
-  // moveit::planning_interface::MoveGroupInterface::Plan my_plan;
-  move_group_interface.setMaxVelocityScalingFactor(0.075);
-  move_group_interface.setMaxAccelerationScalingFactor(0.075);
-  success = (move_group_interface.plan(my_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
+  // // Now, we call the planner to compute the plan and visualize it.
+  // // Note that we are just planning, not asking move_group_interface
+  // // to actually move the robot.
+  // // moveit::planning_interface::MoveGroupInterface::Plan my_plan;
+  // move_group_interface.setMaxVelocityScalingFactor(0.075);
+  // move_group_interface.setMaxAccelerationScalingFactor(0.075);
+  // success = (move_group_interface.plan(my_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
 
-  ROS_INFO_NAMED("tutorial", "Visualizing plan 1 (pose goal) %s", success ? "" : "FAILED");
+  // ROS_INFO_NAMED("tutorial", "Visualizing plan 1 (pose goal) %s", success ? "" : "FAILED");
 
-  // Visualizing plans
-  // ^^^^^^^^^^^^^^^^^
-  // We can also visualize the plan as a line with markers in RViz.
-  ROS_INFO_NAMED("tutorial", "Visualizing plan 1 as trajectory line");
-  visual_tools.publishAxisLabeled(target_pose1, "pose1");
-  visual_tools.publishText(text_pose, "Pose Goal", rvt::WHITE, rvt::XLARGE);
-  visual_tools.publishTrajectoryLine(my_plan.trajectory_, joint_model_group);
-  // visual_tools.trigger();
-  // visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to execute the trajectory");
-  ROS_INFO_NAMED("tutorial", "excuate the  final path");
+  // // Visualizing plans
+  // // ^^^^^^^^^^^^^^^^^
+  // // We can also visualize the plan as a line with markers in RViz.
+  // ROS_INFO_NAMED("tutorial", "Visualizing plan 1 as trajectory line");
+  // visual_tools.publishAxisLabeled(target_pose1, "pose1");
+  // visual_tools.publishText(text_pose, "Pose Goal", rvt::WHITE, rvt::XLARGE);
+  // visual_tools.publishTrajectoryLine(my_plan.trajectory_, joint_model_group);
+  // // visual_tools.trigger();
+  // // visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to execute the trajectory");
+  // ROS_INFO_NAMED("tutorial", "excuate the  final path");
   // ros::WallDuration(6.0).sleep();
 
 
   //(7) excuate the plan
-  if(success){
-    move_group_interface.execute(my_plan);
-  }
+  // if(success){
+  //   move_group_interface.execute(my_plan);
+  // }
   // move_group_interface.move();
 
   // Moving to a pose goal

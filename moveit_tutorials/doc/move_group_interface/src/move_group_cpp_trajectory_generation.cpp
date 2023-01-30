@@ -213,41 +213,41 @@ int main(int argc, char** argv)
   visual_tools.publishText(text_pose, "Add object", rvt::WHITE, rvt::XLARGE);
 
   // (1) first plan the trajecoty to a goal without considering the obstacles
-  geometry_msgs::Pose target_pose2;
-  target_pose2.orientation.x=-0.9238795;
-  target_pose2.orientation.y = 0.3826834;
-  target_pose2.position.x = 0.5;
-  target_pose2.position.y = 0.0;
-  target_pose2.position.z = 0.49;
-  move_group_interface.setPoseTarget(target_pose2);
+  // geometry_msgs::Pose target_pose2;
+  // target_pose2.orientation.x=-0.9238795;
+  // target_pose2.orientation.y = 0.3826834;
+  // target_pose2.position.x = 0.5;
+  // target_pose2.position.y = 0.0;
+  // target_pose2.position.z = 0.49;
+  // move_group_interface.setPoseTarget(target_pose2);
 
-  // Now, we call the planner to compute the plan and visualize it.
-  // Note that we are just planning, not asking move_group_interface
-  // to actually move the robot.
+  // // Now, we call the planner to compute the plan and visualize it.
+  // // Note that we are just planning, not asking move_group_interface
+  // // to actually move the robot.
   moveit::planning_interface::MoveGroupInterface::Plan my_plan;
 
-  move_group_interface.setMaxVelocityScalingFactor(0.075);
-  move_group_interface.setMaxAccelerationScalingFactor(0.075);
-  bool success = (move_group_interface.plan(my_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
+  // move_group_interface.setMaxVelocityScalingFactor(0.075);
+  // move_group_interface.setMaxAccelerationScalingFactor(0.075);
+  // bool success = (move_group_interface.plan(my_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
 
-  ROS_INFO_NAMED("tutorial", "Visualizing plan 1 (pose goal) %s", success ? "" : "FAILED");
+  // ROS_INFO_NAMED("tutorial", "Visualizing plan 1 (pose goal) %s", success ? "" : "FAILED");
 
-  // Visualizing plans
-  // ^^^^^^^^^^^^^^^^^
-  // We can also visualize the plan as a line with markers in RViz.
-  ROS_INFO_NAMED("tutorial", "Visualizing plan 1 as trajectory line");
-  visual_tools.publishAxisLabeled(target_pose2, "pose1");
-  visual_tools.publishText(text_pose, "Pose Goal", rvt::WHITE, rvt::XLARGE);
-  visual_tools.publishTrajectoryLine(my_plan.trajectory_, joint_model_group);
-  visual_tools.trigger();
-  visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to excuate the trajectory");
+  // // Visualizing plans
+  // // ^^^^^^^^^^^^^^^^^
+  // // We can also visualize the plan as a line with markers in RViz.
+  // ROS_INFO_NAMED("tutorial", "Visualizing plan 1 as trajectory line");
+  // visual_tools.publishAxisLabeled(target_pose2, "pose1");
+  // visual_tools.publishText(text_pose, "Pose Goal", rvt::WHITE, rvt::XLARGE);
+  // visual_tools.publishTrajectoryLine(my_plan.trajectory_, joint_model_group);
+  // visual_tools.trigger();
+  // visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to excuate the trajectory");
 
-  // (2) excuate the planned trajectory
-  // wait for some time for me to be ready for putting elastic in front of the robot
-  ros::WallDuration(5.0).sleep();
-  if(success){
-    move_group_interface.execute(my_plan);
-  }
+  // // (2) excuate the planned trajectory
+  // // wait for some time for me to be ready for putting elastic in front of the robot
+  // ros::WallDuration(5.0).sleep();
+  // if(success){
+  //   move_group_interface.execute(my_plan);
+  // }
   // move_group_interface.move();
   // visual_tools.trigger();
   // visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to stop the trajectory executation");
@@ -264,47 +264,54 @@ int main(int argc, char** argv)
 
   
   // (3) retrun to start pose
-  // moveit::core::RobotStatePtr current_state = move_group_interface.getCurrentState();
+  moveit::core::RobotStatePtr current_state = move_group_interface.getCurrentState();
   // //
   // // Next get the current set of joint values for the group.
-  // std::vector<double> joint_group_positions;
-  // current_state->copyJointGroupPositions(joint_model_group, joint_group_positions);
+  std::vector<double> joint_group_positions;
+  current_state->copyJointGroupPositions(joint_model_group, joint_group_positions);
 
-  // // Now, let's modify one of the joints, plan to the new joint space goal and visualize the plan.
-  // joint_group_positions[0] = 0;
-  // joint_group_positions[1] = -0.785398163397;
-  // joint_group_positions[2] =  0;
-  // joint_group_positions[3] =  -2.35619449019;
-  // joint_group_positions[4] =  0;
-  // joint_group_positions[5] =  1.57079632679;
-  // joint_group_positions[6] =  0.78539816339;
-  // move_group_interface.setJointValueTarget(joint_group_positions);
+  // Now, let's modify one of the joints, plan to the new joint space goal and visualize the plan.
+  // joint_group_positions[0] = -48 * 3.1415926 / 180;
+  // joint_group_positions[1] = -17 * 3.1415926/180;
+  // joint_group_positions[2] =  34 * 3.1415926/180;
+  // joint_group_positions[3] =  -126 * 3.1415926/180;
+  // joint_group_positions[4] =  10 * 3.1415926 / 180;
+  // joint_group_positions[5] =  110 * 3.1415926/180;
+  // joint_group_positions[6] =  26 *3.1415926/180;
+  joint_group_positions[0] = 16 * 3.1415926 / 180;
+  joint_group_positions[1] = 25 * 3.1415926/180;
+  joint_group_positions[2] =  -25 * 3.1415926/180;
+  joint_group_positions[3] =  -106 * 3.1415926/180;
+  joint_group_positions[4] =  13 * 3.1415926 / 180;
+  joint_group_positions[5] =  204 * 3.1415926/180;
+  joint_group_positions[6] =  39 *3.1415926/180;
+  move_group_interface.setJointValueTarget(joint_group_positions);
 
-  // // We lower the allowed maximum velocity and acceleration to 5% of their maximum.
-  // // The default values are 10% (0.1).
-  // // Set your preferred defaults in the joint_limits.yaml file of your robot's moveit_config
-  // // or set explicit factors in your code if you need your robot to move faster.
-  // move_group_interface.setMaxVelocityScalingFactor(0.1);
-  // move_group_interface.setMaxAccelerationScalingFactor(0.1);
+  // We lower the allowed maximum velocity and acceleration to 5% of their maximum.
+  // The default values are 10% (0.1).
+  // Set your preferred defaults in the joint_limits.yaml file of your robot's moveit_config
+  // or set explicit factors in your code if you need your robot to move faster.
+  move_group_interface.setMaxVelocityScalingFactor(0.06);
+  move_group_interface.setMaxAccelerationScalingFactor(0.1);
 
-  // success = (move_group_interface.plan(my_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
-  // ROS_INFO_NAMED("tutorial", "Visualizing plan 2 (joint space goal) %s", success ? "" : "FAILED");
+  bool success = (move_group_interface.plan(my_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
+  ROS_INFO_NAMED("tutorial", "Visualizing plan 2 (joint space goal) %s", success ? "" : "FAILED");
 
-  // // Visualize the plan in RViz
-  // visual_tools.deleteAllMarkers();
-  // visual_tools.publishText(text_pose, "Joint Space Goal", rvt::WHITE, rvt::XLARGE);
-  // visual_tools.publishTrajectoryLine(my_plan.trajectory_, joint_model_group);
+  // Visualize the plan in RViz
+  visual_tools.deleteAllMarkers();
+  visual_tools.publishText(text_pose, "Joint Space Goal", rvt::WHITE, rvt::XLARGE);
+  visual_tools.publishTrajectoryLine(my_plan.trajectory_, joint_model_group);
   
-  // visual_tools.trigger();
-  // visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to excuate the trajectoroy");
+  visual_tools.trigger();
+  visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to excuate the trajectoroy");
 
-  // ROS_INFO_NAMED("tutorial", "excuate the trajectory to the start_pose");
-  // // ros::WallDuration(3.0).sleep();
+  ROS_INFO_NAMED("tutorial", "excuate the trajectory to the start_pose");
+  // ros::WallDuration(3.0).sleep();
 
-  // // (4) excuate the planned trajectory
-  // if(success){
-  //   move_group_interface.execute(my_plan);
-  // }
+  // (4) excuate the planned trajectory
+  if(success){
+    move_group_interface.execute(my_plan);
+  }
   // // move_group_interface.move();
 
   // visual_tools.trigger();
@@ -373,8 +380,8 @@ int main(int argc, char** argv)
   // We can plan a motion for this group to a desired pose for the
   // end-effector.
   // Important! read the current state and send it to moveit. otherwise there will be the error Invalid Trajectory: start point deviates from current robot state more than 0.01 joint 'panda_joint2': expected: -0.569261, current: -0.554642
-  robot_state::RobotState current_state(*move_group_interface.getCurrentState());
-  move_group_interface.setStartState(current_state);
+  robot_state::RobotState current_state2(*move_group_interface.getCurrentState());
+  move_group_interface.setStartState(current_state2);
 
   geometry_msgs::Pose target_pose1;
   target_pose1.orientation.x=-0.9238795;

@@ -1,12 +1,12 @@
 Panels:
   - Class: rviz/Displays
-    Help Height: 84
+    Help Height: 172
     Name: Displays
     Property Tree Widget:
       Expanded:
         - /MotionPlanning1
       Splitter Ratio: 0.5
-    Tree Height: 144
+    Tree Height: 172
   - Class: rviz/Help
     Name: Help
   - Class: rviz/Views
@@ -81,7 +81,6 @@ Visualization Manager:
             Alpha: 1
             Show Axes: false
             Show Trail: false
-            Value: true
           panda_hand_tcp:
             Alpha: 1
             Show Axes: false
@@ -100,7 +99,6 @@ Visualization Manager:
             Alpha: 1
             Show Axes: false
             Show Trail: false
-            Value: true
           panda_link1:
             Alpha: 1
             Show Axes: false
@@ -110,7 +108,6 @@ Visualization Manager:
             Alpha: 1
             Show Axes: false
             Show Trail: false
-            Value: true
           panda_link2:
             Alpha: 1
             Show Axes: false
@@ -120,7 +117,6 @@ Visualization Manager:
             Alpha: 1
             Show Axes: false
             Show Trail: false
-            Value: true
           panda_link3:
             Alpha: 1
             Show Axes: false
@@ -130,7 +126,6 @@ Visualization Manager:
             Alpha: 1
             Show Axes: false
             Show Trail: false
-            Value: true
           panda_link4:
             Alpha: 1
             Show Axes: false
@@ -140,7 +135,6 @@ Visualization Manager:
             Alpha: 1
             Show Axes: false
             Show Trail: false
-            Value: true
           panda_link5:
             Alpha: 1
             Show Axes: false
@@ -150,7 +144,6 @@ Visualization Manager:
             Alpha: 1
             Show Axes: false
             Show Trail: false
-            Value: true
           panda_link6:
             Alpha: 1
             Show Axes: false
@@ -160,7 +153,6 @@ Visualization Manager:
             Alpha: 1
             Show Axes: false
             Show Trail: false
-            Value: true
           panda_link7:
             Alpha: 1
             Show Axes: false
@@ -170,7 +162,6 @@ Visualization Manager:
             Alpha: 1
             Show Axes: false
             Show Trail: false
-            Value: true
           panda_link8:
             Alpha: 1
             Show Axes: false
@@ -180,6 +171,10 @@ Visualization Manager:
             Show Axes: false
             Show Trail: false
             Value: true
+          world:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
         Loop Animation: true
         Robot Alpha: 0.5
         Robot Color: 150; 50; 150
@@ -235,7 +230,6 @@ Visualization Manager:
             Alpha: 1
             Show Axes: false
             Show Trail: false
-            Value: true
           panda_hand_tcp:
             Alpha: 1
             Show Axes: false
@@ -254,7 +248,6 @@ Visualization Manager:
             Alpha: 1
             Show Axes: false
             Show Trail: false
-            Value: true
           panda_link1:
             Alpha: 1
             Show Axes: false
@@ -264,7 +257,6 @@ Visualization Manager:
             Alpha: 1
             Show Axes: false
             Show Trail: false
-            Value: true
           panda_link2:
             Alpha: 1
             Show Axes: false
@@ -274,7 +266,6 @@ Visualization Manager:
             Alpha: 1
             Show Axes: false
             Show Trail: false
-            Value: true
           panda_link3:
             Alpha: 1
             Show Axes: false
@@ -284,7 +275,6 @@ Visualization Manager:
             Alpha: 1
             Show Axes: false
             Show Trail: false
-            Value: true
           panda_link4:
             Alpha: 1
             Show Axes: false
@@ -294,7 +284,6 @@ Visualization Manager:
             Alpha: 1
             Show Axes: false
             Show Trail: false
-            Value: true
           panda_link5:
             Alpha: 1
             Show Axes: false
@@ -304,7 +293,6 @@ Visualization Manager:
             Alpha: 1
             Show Axes: false
             Show Trail: false
-            Value: true
           panda_link6:
             Alpha: 1
             Show Axes: false
@@ -314,7 +302,6 @@ Visualization Manager:
             Alpha: 1
             Show Axes: false
             Show Trail: false
-            Value: true
           panda_link7:
             Alpha: 1
             Show Axes: false
@@ -324,7 +311,6 @@ Visualization Manager:
             Alpha: 1
             Show Axes: false
             Show Trail: false
-            Value: true
           panda_link8:
             Alpha: 1
             Show Axes: false
@@ -334,6 +320,10 @@ Visualization Manager:
             Show Axes: false
             Show Trail: false
             Value: true
+          world:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
         Robot Alpha: 0.5
         Show Robot Collision: false
         Show Robot Visual: true
@@ -345,7 +335,6 @@ Visualization Manager:
       Name: MarkerArray
       Namespaces:
         external_force: true
-        external_force_label: true
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -354,7 +343,6 @@ Visualization Manager:
       Name: MarkerArray
       Namespaces:
         external_force: true
-        external_force_label: true
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -363,7 +351,6 @@ Visualization Manager:
       Name: MarkerArray
       Namespaces:
         external_force: true
-        external_force_label: true
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -372,6 +359,148 @@ Visualization Manager:
       Name: MarkerArray
       Namespaces:
         external_force: true
+      Queue Size: 100
+      Value: true
+    - Class: moveit_rviz_plugin/PlanningScene
+      Enabled: true
+      Move Group Namespace: ""
+      Name: PlanningScene
+      Planning Scene Topic: move_group/monitored_planning_scene
+      Robot Description: robot_description
+      Scene Geometry:
+        Scene Alpha: 0.8999999761581421
+        Scene Color: 50; 230; 50
+        Scene Display Time: 0.009999999776482582
+        Show Scene Geometry: true
+        Voxel Coloring: Z-Axis
+        Voxel Rendering: Occupied Voxels
+      Scene Robot:
+        Attached Body Color: 150; 50; 150
+        Links:
+          All Links Enabled: true
+          Expand Joint Details: false
+          Expand Link Details: false
+          Expand Tree: false
+          Link Tree Style: Links in Alphabetic Order
+          panda_hand:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          panda_hand_sc:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+          panda_hand_tcp:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+          panda_leftfinger:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          panda_link0:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          panda_link0_sc:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+          panda_link1:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          panda_link1_sc:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+          panda_link2:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          panda_link2_sc:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+          panda_link3:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          panda_link3_sc:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+          panda_link4:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          panda_link4_sc:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+          panda_link5:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          panda_link5_sc:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+          panda_link6:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          panda_link6_sc:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+          panda_link7:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          panda_link7_sc:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+          panda_link8:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+          panda_rightfinger:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          world:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+        Robot Alpha: 1
+        Show Robot Collision: false
+        Show Robot Visual: true
+      Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /visualization_marker
+      Name: Marker
+      Namespaces:
+        cabinet__cabinet_bottom_plate__cabinet_bottom_plate_geom_cabinet_back_plate_visual: true
+        cabinet__cabinet_bottom_plate__cabinet_bottom_plate_geom_cabinet_left_plate_visual: true
+        cabinet__cabinet_bottom_plate__cabinet_bottom_plate_geom_cabinet_middle_plate_visual: true
+        cabinet__cabinet_bottom_plate__cabinet_bottom_plate_geom_cabinet_middle_plate_visual2: true
+        cabinet__cabinet_bottom_plate__cabinet_bottom_plate_geom_cabinet_right_plate_visual: true
+        cabinet__cabinet_bottom_plate__cabinet_bottom_plate_geom_cabinet_top_plate_visual: true
+        cabinet__cabinet_bottom_plate__cabinet_bottom_plate_geom_visual: true
       Queue Size: 100
       Value: true
   Enabled: true
@@ -406,14 +535,14 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.3349999487400055
+      Pitch: 0.3149999678134918
       Target Frame: panda_link0
-      Yaw: 0.016764681786298752
+      Yaw: 5.134941577911377
     Saved: ~
 Window Geometry:
   Displays:
     collapsed: false
-  Height: 848
+  Height: 1713
   Help:
     collapsed: false
   Hide Left Dock: false
@@ -422,11 +551,11 @@ Window Geometry:
     collapsed: false
   MotionPlanning - Trajectory Slider:
     collapsed: false
-  QMainWindow State: 000000ff00000000fd0000000100000000000001f3000002f6fc0200000008fb000000100044006900730070006c006100790073010000003d00000121000000c900fffffffb0000000800480065006c00700000000342000000bb0000006e00fffffffb0000000a00560069006500770073000000010c000000a4000000a400fffffffb0000000c00430061006d00650072006100000002ff000001610000000000000000fb0000001e004d006f00740069006f006e00200050006c0061006e006e0069006e00670100000374000001890000000000000000fb00000044004d006f00740069006f006e0050006c0061006e006e0069006e00670020002d0020005400720061006a006500630074006f0072007900200053006c00690064006500720000000000ffffffff0000001600000016fb0000001c004d006f00740069006f006e0050006c0061006e006e0069006e00670100000164000001880000017d00fffffffb00000024005200760069007a00560069007300750061006c0054006f006f006c007300470075006901000002f2000000410000004100ffffff00000312000002f600000001000000020000000100000002fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  QMainWindow State: 000000ff00000000fd000000010000000000000492000005f5fc0200000008fb000000100044006900730070006c0061007900730100000086000001de000001de00fffffffb0000000800480065006c00700000000342000000bb0000010600fffffffb0000000a00560069006500770073000000010c000000a40000017800fffffffb0000000c00430061006d00650072006100000002ff000001610000000000000000fb0000001e004d006f00740069006f006e00200050006c0061006e006e0069006e00670100000374000001890000000000000000fb00000044004d006f00740069006f006e0050006c0061006e006e0069006e00670020002d0020005400720061006a006500630074006f0072007900200053006c00690064006500720000000000ffffffff0000002e0000002efb0000001c004d006f00740069006f006e0050006c0061006e006e0069006e00670100000273000003640000035000fffffffb00000024005200760069007a00560069007300750061006c0054006f006f006c007300470075006901000005e6000000950000009500ffffff000003a0000005f500000001000000020000000100000002fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
   RvizVisualToolsGui:
     collapsed: false
   Views:
     collapsed: false
-  Width: 1291
+  Width: 2113
   X: 454
-  Y: 27
+  Y: 68

@@ -295,14 +295,32 @@ int main(int argc, char** argv)
   // joint_group_positions[5] =  106 * 3.1415926/180;
   // joint_group_positions[6] =  59 *3.1415926/180;
 
-  // reach  and collide into the left board of the cabient
-  joint_group_positions[0] = -78 * 3.1415926 / 180;
-  joint_group_positions[1] = 38 * 3.1415926/180;
-  joint_group_positions[2] =  10 * 3.1415926/180;
-  joint_group_positions[3] =  -92 * 3.1415926/180;
-  joint_group_positions[4] =  -8 * 3.1415926 / 180;
-  joint_group_positions[5] =  129 * 3.1415926/180;
-  joint_group_positions[6] =  70 *3.1415926/180;
+  // Motion 1: reach  and collide into the top and left board of the cabient
+  // joint_group_positions[0] = -78 * 3.1415926 / 180;
+  // joint_group_positions[1] = 38 * 3.1415926/180;
+  // joint_group_positions[2] =  10 * 3.1415926/180;
+  // joint_group_positions[3] =  -92 * 3.1415926/180;
+  // joint_group_positions[4] =  -8 * 3.1415926 / 180;
+  // joint_group_positions[5] =  129 * 3.1415926/180;
+  // joint_group_positions[6] =  70 *3.1415926/180;
+
+  //Motion2 [Not good]: reach  and collide into the left board of the cabient, but also collide into the back board, 
+  // joint_group_positions[0] = -74 * 3.1415926 / 180;
+  // joint_group_positions[1] = 36 * 3.1415926/180;
+  // joint_group_positions[2] =  6 * 3.1415926/180;
+  // joint_group_positions[3] =  -93 * 3.1415926/180;
+  // joint_group_positions[4] =  -10 * 3.1415926 / 180;
+  // joint_group_positions[5] =  123 * 3.1415926/180;
+  // joint_group_positions[6] =  -13 *3.1415926/180;
+
+  // MOtion 3:
+  joint_group_positions[0] = -74 * 3.1415926 / 180;
+  joint_group_positions[1] = 36 * 3.1415926/180;
+  joint_group_positions[2] =  6 * 3.1415926/180;
+  joint_group_positions[3] =  -93 * 3.1415926/180;
+  joint_group_positions[4] =  -10 * 3.1415926 / 180;
+  joint_group_positions[5] =  123 * 3.1415926/180;
+  joint_group_positions[6] =  -13 *3.1415926/180;
 
   move_group_interface.setJointValueTarget(joint_group_positions);
 

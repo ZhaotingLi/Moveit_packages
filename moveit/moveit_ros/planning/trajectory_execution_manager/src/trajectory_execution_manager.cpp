@@ -113,7 +113,8 @@ void TrajectoryExecutionManager::initialize()
   execution_complete_ = true;
   current_context_ = -1;
   last_execution_status_ = moveit_controller_manager::ExecutionStatus::SUCCEEDED;
-  execution_duration_monitoring_ = true;
+  // execution_duration_monitoring_ = true;
+  execution_duration_monitoring_ = false; // For the contact-aware controller, the duration is larger than the planned time
   execution_velocity_scaling_ = 1.0;
   allowed_start_tolerance_ = 0.01;
 

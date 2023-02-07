@@ -322,14 +322,23 @@ int main(int argc, char** argv)
   // joint_group_positions[5] =  123 * 3.1415926/180;
   // joint_group_positions[6] =  -13 *3.1415926/180;
 
-  // Motion 4: env: cabinet_crl2
-  joint_group_positions[0] = -93 * 3.1415926 / 180;
-  joint_group_positions[1] = 50 * 3.1415926/180;
+  // // Motion 4: env: cabinet_crl2
+  // joint_group_positions[0] = -93 * 3.1415926 / 180;
+  // joint_group_positions[1] = 50 * 3.1415926/180;
+  // joint_group_positions[2] =  0 * 3.1415926/180;
+  // joint_group_positions[3] =  -85 * 3.1415926/180;
+  // joint_group_positions[4] =  0 * 3.1415926 / 180;
+  // joint_group_positions[5] =  135 * 3.1415926/180;
+  // joint_group_positions[6] =  41 *3.1415926/180;
+
+  // Motion 5: env: cabinet_crl2
+  joint_group_positions[0] = -92 * 3.1415926 / 180;
+  joint_group_positions[1] = 54 * 3.1415926/180;
   joint_group_positions[2] =  0 * 3.1415926/180;
-  joint_group_positions[3] =  -85 * 3.1415926/180;
+  joint_group_positions[3] =  -84 * 3.1415926/180;
   joint_group_positions[4] =  0 * 3.1415926 / 180;
-  joint_group_positions[5] =  135 * 3.1415926/180;
-  joint_group_positions[6] =  41 *3.1415926/180;
+  joint_group_positions[5] =  137 * 3.1415926/180;
+  joint_group_positions[6] =  42 *3.1415926/180;
 
   move_group_interface.setJointValueTarget(joint_group_positions);
 

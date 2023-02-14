@@ -34,7 +34,7 @@
 
 /* Author: Sachin Chitta, Mike Lautman*/
 
-#include <pluginlib/class_loader.h>
+#include <pluginlib/class_loader.hpp>
 #include <ros/ros.h>
 
 // MoveIt
@@ -47,6 +47,8 @@
 #include <moveit_msgs/DisplayTrajectory.h>
 #include <moveit_msgs/PlanningScene.h>
 #include <moveit_visual_tools/moveit_visual_tools.h>
+
+#include <moveit/move_group_interface/move_group_interface.h>
 
 int main(int argc, char** argv)
 {
@@ -84,6 +86,11 @@ int main(int argc, char** argv)
   /* listen to joint state updates as well as changes in attached collision objects
                         and update the internal planning scene accordingly*/
   psm->startStateMonitor();
+
+
+  static const std::string PLANNING_GROUP = "panda_arm";
+  moveit::planning_interface::MoveGroupInterface move_group_interface(PLANNING_GROUP);
+
 
   /* We can also use the RobotModelLoader to get a robot model which contains the robot's kinematic information */
   moveit::core::RobotModelPtr robot_model = robot_model_loader->getModel();
@@ -133,14 +140,15 @@ int main(int argc, char** argv)
   planning_interface::MotionPlanRequest req;
   planning_interface::MotionPlanResponse res;
   geometry_msgs::PoseStamped pose;
-  ros::Time a_little_after_the_beginning(10);
   pose.header.frame_id = "panda_link0";
-  pose.header.stamp = a_little_after_the_beginning;
-  pose.pose.orientation.x=-0.9238795;
-  pose.pose.orientation.y = 0.3826834;
-  pose.pose.position.x = 0.5;
-  pose.pose.position.y = 0.0;
-  pose.pose.position.z = 0.59;
+  pose.pose.position.x = 0.1;
+  pose.pose.position.y = -0.55;
+  pose.pose.position.z = 0.49;
+  // pose.pose.orientation.w = 1.0;
+  pose.pose.orientation.w = -0.00246248;
+  pose.pose.orientation.x = -0.38256;
+  pose.pose.orientation.y = 0.923908;
+  pose.pose.orientation.z = -0.00592648;
 
   // A tolerance of 0.01 m is specified in position
   // and 0.01 radians in orientation
@@ -153,7 +161,7 @@ int main(int argc, char** argv)
   // package.
   //
   // .. _kinematic_constraints:
-  //     http://docs.ros.org/noetic/api/moveit_core/html/cpp/namespacekinematic__constraints.html#a88becba14be9ced36fefc7980271e132
+  //     http://docs.ros.org/noetic/api/moveit_core/html/namespacekinematic__constraints.html#a88becba14be9ced36fefc7980271e132
   req.group_name = "panda_arm";
   moveit_msgs::Constraints pose_goal =
       kinematic_constraints::constructGoalConstraints("panda_link8", pose, tolerance_pose, tolerance_angle);
@@ -191,50 +199,56 @@ int main(int argc, char** argv)
   visual_tools.publishTrajectoryLine(display_trajectory.trajectory.back(), joint_model_group);
   visual_tools.trigger();
 
+    moveit::planning_interface::MoveGroupInterface::Plan my_plan;
+  my_plan.trajectory_ = response.trajectory;
+  my_plan.start_state_ = response.trajectory_start;
+  my_plan.planning_time_ = response.planning_time;
+  move_group_interface.execute(my_plan);
+
   /* Wait for user input */
   visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to continue the demo");
 
-  // // Joint Space Goals
-  // // ^^^^^^^^^^^^^^^^^
-  // /* First, set the state in the planning scene to the final state of the last plan */
-  // robot_state = planning_scene_monitor::LockedPlanningSceneRO(psm)->getCurrentStateUpdated(response.trajectory_start);
-  // robot_state->setJointGroupPositions(joint_model_group, response.trajectory.joint_trajectory.points.back().positions);
-  // moveit::core::robotStateToRobotStateMsg(*robot_state, req.start_state);
+  // Joint Space Goals
+  // ^^^^^^^^^^^^^^^^^
+  /* First, set the state in the planning scene to the final state of the last plan */
+  robot_state = planning_scene_monitor::LockedPlanningSceneRO(psm)->getCurrentStateUpdated(response.trajectory_start);
+  robot_state->setJointGroupPositions(joint_model_group, response.trajectory.joint_trajectory.points.back().positions);
+  moveit::core::robotStateToRobotStateMsg(*robot_state, req.start_state);
 
-  // // Now, setup a joint space goal
-  // moveit::core::RobotState goal_state(*robot_state);
-  // std::vector<double> joint_values = { -1.0, 0.7, 0.7, -1.5, -0.7, 2.0, 0.0 };
-  // goal_state.setJointGroupPositions(joint_model_group, joint_values);
-  // moveit_msgs::Constraints joint_goal = kinematic_constraints::constructGoalConstraints(goal_state, joint_model_group);
+  // Now, setup a joint space goal
+  moveit::core::RobotState goal_state(*robot_state);
+  std::vector<double> joint_values = { -1.0, 0.7, 0.7, -1.5, -0.7, 2.0, 0.0 };
+  goal_state.setJointGroupPositions(joint_model_group, joint_values);
+  moveit_msgs::Constraints joint_goal = kinematic_constraints::constructGoalConstraints(goal_state, joint_model_group);
 
-  // req.goal_constraints.clear();
-  // req.goal_constraints.push_back(joint_goal);
+  req.goal_constraints.clear();
+  req.goal_constraints.push_back(joint_goal);
 
-  // // Before planning, we will need a Read Only lock on the planning scene so that it does not modify the world
-  // // representation while planning
-  // {
-  //   planning_scene_monitor::LockedPlanningSceneRO lscene(psm);
-  //   /* Now, call the pipeline and check whether planning was successful. */
-  //   planning_pipeline->generatePlan(lscene, req, res);
-  // }
-  // /* Check that the planning was successful */
-  // if (res.error_code_.val != res.error_code_.SUCCESS)
-  // {
-  //   ROS_ERROR("Could not compute plan successfully");
-  //   return 0;
-  // }
-  // /* Visualize the trajectory */
-  // ROS_INFO("Visualizing the trajectory");
-  // res.getMessage(response);
-  // display_trajectory.trajectory_start = response.trajectory_start;
-  // display_trajectory.trajectory.push_back(response.trajectory);
-  // // Now you should see two planned trajectories in series
-  // display_publisher.publish(display_trajectory);
-  // visual_tools.publishTrajectoryLine(display_trajectory.trajectory.back(), joint_model_group);
-  // visual_tools.trigger();
+  // Before planning, we will need a Read Only lock on the planning scene so that it does not modify the world
+  // representation while planning
+  {
+    planning_scene_monitor::LockedPlanningSceneRO lscene(psm);
+    /* Now, call the pipeline and check whether planning was successful. */
+    planning_pipeline->generatePlan(lscene, req, res);
+  }
+  /* Check that the planning was successful */
+  if (res.error_code_.val != res.error_code_.SUCCESS)
+  {
+    ROS_ERROR("Could not compute plan successfully");
+    return 0;
+  }
+  /* Visualize the trajectory */
+  ROS_INFO("Visualizing the trajectory");
+  res.getMessage(response);
+  display_trajectory.trajectory_start = response.trajectory_start;
+  display_trajectory.trajectory.push_back(response.trajectory);
+  // Now you should see two planned trajectories in series
+  display_publisher.publish(display_trajectory);
+  visual_tools.publishTrajectoryLine(display_trajectory.trajectory.back(), joint_model_group);
+  visual_tools.trigger();
 
-  // /* Wait for user input */
-  // visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to continue the demo");
+  /* Wait for user input */
+  visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to continue the demo");
 
   // Using a Planning Request Adapter
   // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

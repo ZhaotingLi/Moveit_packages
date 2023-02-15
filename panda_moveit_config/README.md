@@ -10,3 +10,9 @@ is co-located under the ``ros-planning`` Github organization here.
 ```
 roslaunch panda_moveit_config franka_control.launch robot_ip:=172.16.0.2 load_gripper:=true
 ```
+
+
+```
+roslaunch panda_moveit_config demo_gazebo.launch pipeline:=pilz_industrial_motion_planner
+
+```

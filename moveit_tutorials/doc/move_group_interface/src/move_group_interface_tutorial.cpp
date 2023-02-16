@@ -138,9 +138,9 @@ int main(int argc, char** argv)
   target_pose1.orientation.x = -0.38256;
   target_pose1.orientation.y = 0.923908;
   target_pose1.orientation.z = -0.00592648;
-  target_pose1.position.x = 0.10;
-  target_pose1.position.y = -0.551221;
-  target_pose1.position.z = 0.494742;
+  target_pose1.position.x = 0.0;
+  target_pose1.position.y = -0.581221;
+  target_pose1.position.z = 0.444742;
   // move_group_interface.setPoseTarget(target_pose1);
 
   // Cartesian Paths
@@ -153,14 +153,16 @@ int main(int argc, char** argv)
   waypoints.push_back(target_pose1);
 
 
-    geometry_msgs::Pose target_pose2 = target_pose1;
+  //   geometry_msgs::Pose target_pose2 = target_pose1;
 
-  target_pose2.position.x += 0.05;
-  waypoints.push_back(target_pose2);  // down
+  // target_pose2.position.z -= 0.05;
+  // target_pose2.position.y -= 0.02;
+  // waypoints.push_back(target_pose2);  // down
 
-  geometry_msgs::Pose target_pose3 = target_pose2;
+  geometry_msgs::Pose target_pose3 = target_pose1;
 
-  target_pose3.position.z -= 0.26;
+  target_pose3.position.z -= 0.33;
+  target_pose3.position.y -= 0.1;
   waypoints.push_back(target_pose3);  // down
 
 

@@ -314,13 +314,13 @@ int main(int argc, char** argv)
   // joint_group_positions[6] =  -13 *3.1415926/180;
 
   // MOtion 3 [Good traj]: env: cabinet_crl, reach and collide into the left board of the cabient, tested for rigid contact qp solver 
-  // joint_group_positions[0] = -74 * 3.1415926 / 180;
-  // joint_group_positions[1] = 36 * 3.1415926/180;
-  // joint_group_positions[2] =  6 * 3.1415926/180;
-  // joint_group_positions[3] =  -93 * 3.1415926/180;
-  // joint_group_positions[4] =  -10 * 3.1415926 / 180;
-  // joint_group_positions[5] =  123 * 3.1415926/180;
-  // joint_group_positions[6] =  -13 *3.1415926/180;
+  joint_group_positions[0] = -74 * 3.1415926 / 180;
+  joint_group_positions[1] = 36 * 3.1415926/180;
+  joint_group_positions[2] =  6 * 3.1415926/180;
+  joint_group_positions[3] =  -93 * 3.1415926/180;
+  joint_group_positions[4] =  -10 * 3.1415926 / 180;
+  joint_group_positions[5] =  123 * 3.1415926/180;
+  joint_group_positions[6] =  -13 *3.1415926/180;
 
   // // Motion 4: env: cabinet_crl2
   // joint_group_positions[0] = -93 * 3.1415926 / 180;
@@ -341,13 +341,13 @@ int main(int argc, char** argv)
   // joint_group_positions[6] =  42 *3.1415926/180;
 
   // Motion 6: env: cabinet_crl2, end effecotr a little bit lower along z axis than Motion 5
-  joint_group_positions[0] = -90 * 3.1415926 / 180;
-  joint_group_positions[1] = 52 * 3.1415926/180;
-  joint_group_positions[2] =  0 * 3.1415926/180;
-  joint_group_positions[3] =  -90 * 3.1415926/180;
-  joint_group_positions[4] =  0 * 3.1415926 / 180;
-  joint_group_positions[5] =  137 * 3.1415926/180;
-  joint_group_positions[6] =  44 *3.1415926/180;
+  // joint_group_positions[0] = -90 * 3.1415926 / 180;
+  // joint_group_positions[1] = 52 * 3.1415926/180;
+  // joint_group_positions[2] =  0 * 3.1415926/180;
+  // joint_group_positions[3] =  -90 * 3.1415926/180;
+  // joint_group_positions[4] =  0 * 3.1415926 / 180;
+  // joint_group_positions[5] =  137 * 3.1415926/180;
+  // joint_group_positions[6] =  44 *3.1415926/180;
 
   move_group_interface.setJointValueTarget(joint_group_positions);
 

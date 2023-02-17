@@ -126,8 +126,17 @@ int main(int argc, char** argv)
   target_pose0.orientation.y = 0.827758;
   target_pose0.orientation.z = -0.410444;
   target_pose0.position.x = 0.0;
-  target_pose0.position.y = -0.519452;
+  target_pose0.position.y = -0.569452;
   target_pose0.position.z = 0.576226;
+
+  geometry_msgs::Pose target_pose0_1 = target_pose0;
+  target_pose0_1.orientation.w = -0.10693;
+  target_pose0_1.orientation.x = -0.362861;
+  target_pose0_1.orientation.y = 0.888087;
+  target_pose0_1.orientation.z = -0.261149;
+  target_pose0_1.position.z -= 0.05;
+  target_pose0_1.position.y -= 0.08;
+  // waypoints.push_back(target_pose2);  // down
 
   geometry_msgs::Pose target_pose1;
   // target_pose1.orientation.x = 0.707;
@@ -144,13 +153,13 @@ int main(int argc, char** argv)
   // target_pose1.position.x = 0.00319;
   // target_pose1.position.y = -0.53201;
   // target_pose1.position.z = 0.38189;
-    target_pose1.orientation.w = -0.00246248;
+  target_pose1.orientation.w = -0.00246248;
   target_pose1.orientation.x = -0.38256;
   target_pose1.orientation.y = 0.923908;
   target_pose1.orientation.z = -0.00592648;
   target_pose1.position.x = 0.0;
   // target_pose1.position.y = -0.581221 - 0.1;
-  target_pose1.position.y = -0.581221 ;
+  target_pose1.position.y = -0.661221 ;
   target_pose1.position.z = 0.444742 - 0.33;
   // move_group_interface.setPoseTarget(target_pose1);
 
@@ -162,6 +171,7 @@ int main(int argc, char** argv)
   // need to be added to the waypoint list but adding it can help with visualizations
   std::vector<geometry_msgs::Pose> waypoints;
   waypoints.push_back(target_pose0);
+  waypoints.push_back(target_pose0_1);
   waypoints.push_back(target_pose1);
 
 

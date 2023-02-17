@@ -119,6 +119,16 @@ int main(int argc, char** argv)
   // Start the demo
   // ^^^^^^^^^^^^^^^^^^^^^^^^^
   visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to start the demo");
+  
+  geometry_msgs::Pose target_pose0;
+  target_pose0.orientation.w = -0.16995;
+  target_pose0.orientation.x = -0.342739;
+  target_pose0.orientation.y = 0.827758;
+  target_pose0.orientation.z = -0.410444;
+  target_pose0.position.x = 0.0;
+  target_pose0.position.y = -0.519452;
+  target_pose0.position.z = 0.576226;
+
   geometry_msgs::Pose target_pose1;
   // target_pose1.orientation.x = 0.707;
   // target_pose1.orientation.y = -0.707;
@@ -139,8 +149,9 @@ int main(int argc, char** argv)
   target_pose1.orientation.y = 0.923908;
   target_pose1.orientation.z = -0.00592648;
   target_pose1.position.x = 0.0;
-  target_pose1.position.y = -0.581221;
-  target_pose1.position.z = 0.444742;
+  // target_pose1.position.y = -0.581221 - 0.1;
+  target_pose1.position.y = -0.581221 ;
+  target_pose1.position.z = 0.444742 - 0.33;
   // move_group_interface.setPoseTarget(target_pose1);
 
   // Cartesian Paths
@@ -150,6 +161,7 @@ int main(int argc, char** argv)
   // from the new start state above.  The initial pose (start state) does not
   // need to be added to the waypoint list but adding it can help with visualizations
   std::vector<geometry_msgs::Pose> waypoints;
+  waypoints.push_back(target_pose0);
   waypoints.push_back(target_pose1);
 
 
@@ -159,11 +171,11 @@ int main(int argc, char** argv)
   // target_pose2.position.y -= 0.02;
   // waypoints.push_back(target_pose2);  // down
 
-  geometry_msgs::Pose target_pose3 = target_pose1;
+  // geometry_msgs::Pose target_pose3 = target_pose1;
 
-  target_pose3.position.z -= 0.33;
-  target_pose3.position.y -= 0.1;
-  waypoints.push_back(target_pose3);  // down
+  // target_pose3.position.z -= 0.33;
+  // target_pose3.position.y -= 0.1;
+  // waypoints.push_back(target_pose3);  // down
 
 
   // We want the Cartesian path to be interpolated at a resolution of 1 cm

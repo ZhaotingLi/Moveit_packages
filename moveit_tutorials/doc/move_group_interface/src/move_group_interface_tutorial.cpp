@@ -45,6 +45,8 @@
 
 #include <moveit_visual_tools/moveit_visual_tools.h>
 
+#include <moveit/trajectory_processing/iterative_time_parameterization.h>
+
 // The circle constant tau = 2*pi. One tau is one rotation in radians.
 const double tau = 2 * M_PI;
 
@@ -200,6 +202,14 @@ int main(int argc, char** argv)
   move_group_interface.setMaxAccelerationScalingFactor(0.1);
   double fraction = move_group_interface.computeCartesianPath(waypoints, eef_step, jump_threshold, trajectory);
   ROS_INFO_NAMED("tutorial", "Visualizing plan 4 (Cartesian path) (%.2f%% achieved)", fraction * 100.0);
+
+  // time parameterization
+  robot_trajectory::RobotTrajectory rt(move_group_interface.getRobotModel(), move_group_interface.getName());
+  rt.setRobotTrajectoryMsg(*move_group_interface.getCurrentState(), trajectory);
+  trajectory_processing::IterativeParabolicTimeParameterization iptp;
+  bool success =
+      iptp.computeTimeStamps(rt, 0.2, 0.1); // velocity scale + acceleration scale
+  rt.getRobotTrajectoryMsg(trajectory);
 
   // Visualize the plan in RViz
   visual_tools.deleteAllMarkers();

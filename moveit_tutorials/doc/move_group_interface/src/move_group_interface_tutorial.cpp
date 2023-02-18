@@ -162,7 +162,7 @@ int main(int argc, char** argv)
   target_pose1.position.x = 0.0;
   // target_pose1.position.y = -0.581221 - 0.1;
   target_pose1.position.y = -0.661221 ;
-  target_pose1.position.z = 0.444742 - 0.33;
+  target_pose1.position.z = 0.444742 - 0.33 - 0.035;
   // move_group_interface.setPoseTarget(target_pose1);
 
   // Cartesian Paths
@@ -204,12 +204,12 @@ int main(int argc, char** argv)
   ROS_INFO_NAMED("tutorial", "Visualizing plan 4 (Cartesian path) (%.2f%% achieved)", fraction * 100.0);
 
   // time parameterization
-  robot_trajectory::RobotTrajectory rt(move_group_interface.getRobotModel(), move_group_interface.getName());
-  rt.setRobotTrajectoryMsg(*move_group_interface.getCurrentState(), trajectory);
-  trajectory_processing::IterativeParabolicTimeParameterization iptp;
-  bool success =
-      iptp.computeTimeStamps(rt, 0.2, 0.1); // velocity scale + acceleration scale
-  rt.getRobotTrajectoryMsg(trajectory);
+  // robot_trajectory::RobotTrajectory rt(move_group_interface.getRobotModel(), move_group_interface.getName());
+  // rt.setRobotTrajectoryMsg(*move_group_interface.getCurrentState(), trajectory);
+  // trajectory_processing::IterativeParabolicTimeParameterization iptp;
+  // bool success =
+  //     iptp.computeTimeStamps(rt, 0.2, 0.1); // velocity scale + acceleration scale
+  // rt.getRobotTrajectoryMsg(trajectory);
 
   // Visualize the plan in RViz
   visual_tools.deleteAllMarkers();

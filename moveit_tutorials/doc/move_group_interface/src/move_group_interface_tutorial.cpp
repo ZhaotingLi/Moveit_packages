@@ -122,72 +122,70 @@ int main(int argc, char** argv)
   // ^^^^^^^^^^^^^^^^^^^^^^^^^
   visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to start the demo");
   
-  geometry_msgs::Pose target_pose0;
-  target_pose0.orientation.w = -0.16995;
-  target_pose0.orientation.x = -0.342739;
-  target_pose0.orientation.y = 0.827758;
-  target_pose0.orientation.z = -0.410444;
-  target_pose0.position.x = 0.0;
-  target_pose0.position.y = -0.569452;
-  target_pose0.position.z = 0.576226;
 
-  geometry_msgs::Pose target_pose0_1 = target_pose0;
-  target_pose0_1.orientation.w = -0.10693;
-  target_pose0_1.orientation.x = -0.362861;
-  target_pose0_1.orientation.y = 0.888087;
-  target_pose0_1.orientation.z = -0.261149;
-  target_pose0_1.position.z -= 0.05;
-  target_pose0_1.position.y -= 0.08;
-  // waypoints.push_back(target_pose2);  // down
+  /* Waypoints For soft contacts [Begin]*/
+  // geometry_msgs::Pose target_pose0;
+  // target_pose0.orientation.w = -0.16995;
+  // target_pose0.orientation.x = -0.342739;
+  // target_pose0.orientation.y = 0.827758;
+  // target_pose0.orientation.z = -0.410444;
+  // target_pose0.position.x = 0.0;
+  // target_pose0.position.y = -0.569452;
+  // target_pose0.position.z = 0.576226;
+
+  // geometry_msgs::Pose target_pose0_1 = target_pose0;
+  // target_pose0_1.orientation.w = -0.10693;
+  // target_pose0_1.orientation.x = -0.362861;
+  // target_pose0_1.orientation.y = 0.888087;
+  // target_pose0_1.orientation.z = -0.261149;
+  // target_pose0_1.position.z -= 0.05;
+  // target_pose0_1.position.y -= 0.08;
+  // geometry_msgs::Pose target_pose1;
+
+  // target_pose1.orientation.w = -0.00246248;
+  // target_pose1.orientation.x = -0.38256;
+  // target_pose1.orientation.y = 0.923908;
+  // target_pose1.orientation.z = -0.00592648;
+  // target_pose1.position.x = 0.0;
+  // // target_pose1.position.y = -0.581221 - 0.1;
+  // target_pose1.position.y = -0.661221 ;
+  // target_pose1.position.z = 0.444742 - 0.33 - 0.035;
+
+  // std::vector<geometry_msgs::Pose> waypoints;
+  // waypoints.push_back(target_pose0);
+  // waypoints.push_back(target_pose0_1);
+  // waypoints.push_back(target_pose1);
+  /* Waypoints For soft contacts [end]*/
+
+  std::vector<geometry_msgs::Pose> waypoints;
 
   geometry_msgs::Pose target_pose1;
-  // target_pose1.orientation.x = 0.707;
-  // target_pose1.orientation.y = -0.707;
-  // target_pose1.orientation.z = 0.0031;
-  // target_pose1.orientation.w = 0.0032;
-  // target_pose1.position.x = 0.0;
-  // target_pose1.position.y = -0.43457;
-  // target_pose1.position.z = 0.43416;
-  // target_pose1.orientation.w = 0.01788;
-  // target_pose1.orientation.x = 0.707;
-  // target_pose1.orientation.y = -0.7067;
-  // target_pose1.orientation.z = -0.0165;
-  // target_pose1.position.x = 0.00319;
-  // target_pose1.position.y = -0.53201;
-  // target_pose1.position.z = 0.38189;
+
   target_pose1.orientation.w = -0.00246248;
   target_pose1.orientation.x = -0.38256;
   target_pose1.orientation.y = 0.923908;
   target_pose1.orientation.z = -0.00592648;
-  target_pose1.position.x = 0.0;
+  target_pose1.position.x = 0.10;
   // target_pose1.position.y = -0.581221 - 0.1;
-  target_pose1.position.y = -0.661221 ;
-  target_pose1.position.z = 0.444742 - 0.33 - 0.035;
-  // move_group_interface.setPoseTarget(target_pose1);
+  target_pose1.position.y = -0.551221 ;
+  target_pose1.position.z = 0.494742;
 
-  // Cartesian Paths
-  // ^^^^^^^^^^^^^^^
-  // You can plan a Cartesian path directly by specifying a list of waypoints
-  // for the end-effector to go through. Note that we are starting
-  // from the new start state above.  The initial pose (start state) does not
-  // need to be added to the waypoint list but adding it can help with visualizations
-  std::vector<geometry_msgs::Pose> waypoints;
-  waypoints.push_back(target_pose0);
-  waypoints.push_back(target_pose0_1);
   waypoints.push_back(target_pose1);
 
+  geometry_msgs::Pose target_pose2 = target_pose1;
+  target_pose2.position.x += 0.05;
+  waypoints.push_back(target_pose2);  // collide into the cabinet
 
-  //   geometry_msgs::Pose target_pose2 = target_pose1;
+  geometry_msgs::Pose target_pose3 = target_pose2;
 
-  // target_pose2.position.z -= 0.05;
-  // target_pose2.position.y -= 0.02;
-  // waypoints.push_back(target_pose2);  // down
-
-  // geometry_msgs::Pose target_pose3 = target_pose1;
-
-  // target_pose3.position.z -= 0.33;
+  target_pose3.position.z -= 0.26;
   // target_pose3.position.y -= 0.1;
-  // waypoints.push_back(target_pose3);  // down
+  waypoints.push_back(target_pose3);  // down
+
+
+  geometry_msgs::Pose target_pose4 = target_pose3;
+  target_pose4.position.x -= 0.15;
+  waypoints.push_back(target_pose4);  // away from the cabinet
 
 
   // We want the Cartesian path to be interpolated at a resolution of 1 cm

@@ -184,6 +184,7 @@ int main(int argc, char** argv)
   // ^^^^^^^^^^^^^^^^^^^^^^^^^
   visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to start the demo");
 
+  double obs_pos_x_bias = 0.15;
   moveit_msgs::CollisionObject collision_object;
   collision_object.header.frame_id = move_group_interface.getPlanningFrame();
     // add second obstacle for cabinet
@@ -201,7 +202,7 @@ int main(int argc, char** argv)
   // Define a pose for the box (specified relative to frame_id)
   geometry_msgs::Pose box_pose;
   box_pose.orientation.w = 1.0;
-  box_pose.position.x = 0.5;
+  box_pose.position.x = 0.5 + obs_pos_x_bias;
   box_pose.position.y = 0.3;
   box_pose.position.z = 0.4;
 
@@ -218,7 +219,7 @@ int main(int argc, char** argv)
   // Define a pose for the box (specified relative to frame_id)
   // geometry_msgs::Pose box_pose;
   box_pose.orientation.w = 1.0;
-  box_pose.position.x = 0.5;
+  box_pose.position.x = 0.5 + obs_pos_x_bias;
   box_pose.position.y = -0.3;
   box_pose.position.z = 0.4;
 
@@ -229,12 +230,35 @@ int main(int argc, char** argv)
   // std::vector<moveit_msgs::CollisionObject> collision_objects;
   collision_objects.push_back(collision_object);
 
-    // add third 
+    // add third "elastic band"
   // The id of the object is used to identify it.
   primitive.type = primitive.BOX;
   primitive.dimensions.resize(3);
   primitive.dimensions[primitive.BOX_Y] = 0.6;
   primitive.dimensions[primitive.BOX_X] = 0.01;
+  primitive.dimensions[primitive.BOX_Z] = 0.3;   // 0.03
+
+  collision_object.id = "box1";
+  // Define a pose for the box (specified relative to frame_id)
+  // geometry_msgs::Pose box_pose;
+  box_pose.orientation.w = 1.0;
+  box_pose.position.y = 0;
+  box_pose.position.x = 0.35 + obs_pos_x_bias;
+  box_pose.position.z = 0.5 - primitive.dimensions[primitive.BOX_Z]/2;
+
+  collision_object.primitives.push_back(primitive);
+  collision_object.primitive_poses.push_back(box_pose);
+  collision_object.operation = collision_object.ADD;
+
+  // std::vector<moveit_msgs::CollisionObject> collision_objects;
+  collision_objects.push_back(collision_object);
+
+    // add 4th-- upper borad of the cabinet 
+  // The id of the object is used to identify it.
+  primitive.type = primitive.BOX;
+  primitive.dimensions.resize(3);
+  primitive.dimensions[primitive.BOX_Y] = 0.6;
+  primitive.dimensions[primitive.BOX_X] = 0.3;
   primitive.dimensions[primitive.BOX_Z] = 0.03;
 
   collision_object.id = "box1";
@@ -242,8 +266,31 @@ int main(int argc, char** argv)
   // geometry_msgs::Pose box_pose;
   box_pose.orientation.w = 1.0;
   box_pose.position.y = 0;
-  box_pose.position.x = 0.35;
-  box_pose.position.z = 0.5;
+  box_pose.position.x = 0.5 + obs_pos_x_bias;
+  box_pose.position.z = 0.77;
+
+  collision_object.primitives.push_back(primitive);
+  collision_object.primitive_poses.push_back(box_pose);
+  collision_object.operation = collision_object.ADD;
+
+  // std::vector<moveit_msgs::CollisionObject> collision_objects;
+  collision_objects.push_back(collision_object);
+
+    // add 5th-- ground
+  // The id of the object is used to identify it.
+  primitive.type = primitive.BOX;
+  primitive.dimensions.resize(3);
+  primitive.dimensions[primitive.BOX_Y] = 1;
+  primitive.dimensions[primitive.BOX_X] = 1;
+  primitive.dimensions[primitive.BOX_Z] = 0.01;
+
+  collision_object.id = "box1";
+  // Define a pose for the box (specified relative to frame_id)
+  // geometry_msgs::Pose box_pose;
+  box_pose.orientation.w = 1.0;
+  box_pose.position.y = 0;
+  box_pose.position.x = 0;
+  box_pose.position.z = -0.01;
 
   collision_object.primitives.push_back(primitive);
   collision_object.primitive_poses.push_back(box_pose);
@@ -272,6 +319,7 @@ int main(int argc, char** argv)
   acm.setEntry("panda_link3", "box1", true);
   acm.setEntry("panda_link4", "box1", true);
   acm.setEntry("panda_link5", "box1", true);
+  // acm.setEntry("panda_link6", "box1", true);
 
   acm.getMessage(planning_scene_msg.allowed_collision_matrix);
   planning_scene_msg.world.collision_objects = collision_objects;

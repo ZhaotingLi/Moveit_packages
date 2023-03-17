@@ -47,6 +47,14 @@
 
 #include "geometry_msgs/Wrench.h"
 #include <Eigen/Core>
+
+#include <moveit/robot_model_loader/robot_model_loader.h>
+#include <moveit/planning_scene/planning_scene.h>
+
+#include <moveit/kinematic_constraints/utils.h>
+
+#include <moveit_msgs/ApplyPlanningScene.h>
+
 // The circle constant tau = 2*pi. One tau is one rotation in radians.
 const double tau = 2 * M_PI;
 
@@ -121,6 +129,22 @@ int main(int argc, char** argv)
   const moveit::core::JointModelGroup* joint_model_group =
       move_group_interface.getCurrentState()->getJointModelGroup(PLANNING_GROUP);
 
+
+  planning_scene_monitor::PlanningSceneMonitorPtr planning_scene_monitor;
+  planning_scene_monitor = std::make_shared<planning_scene_monitor::PlanningSceneMonitor>("robot_description");
+  if (!planning_scene_monitor->getPlanningScene())
+  {
+    ROS_ERROR_STREAM_NAMED("tutorial", "Error in setting up the PlanningSceneMonitor.");
+    exit(EXIT_FAILURE);
+  }
+
+  planning_scene_monitor->startSceneMonitor();
+  planning_scene_monitor->startWorldGeometryMonitor(
+      planning_scene_monitor::PlanningSceneMonitor::DEFAULT_COLLISION_OBJECT_TOPIC,
+      planning_scene_monitor::PlanningSceneMonitor::DEFAULT_PLANNING_SCENE_WORLD_TOPIC,
+      false /* skip octomap monitor */);
+  planning_scene_monitor->startStateMonitor();
+
   // Visualization
   // ^^^^^^^^^^^^^
   //
@@ -170,15 +194,15 @@ int main(int argc, char** argv)
   shape_msgs::SolidPrimitive primitive;
   primitive.type = primitive.BOX;
   primitive.dimensions.resize(3);
-  primitive.dimensions[primitive.BOX_X] = 0.02;
-  primitive.dimensions[primitive.BOX_Y] = 0.3;
+  primitive.dimensions[primitive.BOX_Y] = 0.02;
+  primitive.dimensions[primitive.BOX_X] = 0.3;
   primitive.dimensions[primitive.BOX_Z] = 0.8;
 
   // Define a pose for the box (specified relative to frame_id)
   geometry_msgs::Pose box_pose;
   box_pose.orientation.w = 1.0;
-  box_pose.position.y = -0.5;
-  box_pose.position.x = 0.3;
+  box_pose.position.x = 0.5;
+  box_pose.position.y = 0.3;
   box_pose.position.z = 0.4;
 
   collision_object.primitives.push_back(primitive);
@@ -194,8 +218,8 @@ int main(int argc, char** argv)
   // Define a pose for the box (specified relative to frame_id)
   // geometry_msgs::Pose box_pose;
   box_pose.orientation.w = 1.0;
-  box_pose.position.x = -0.3;
-  box_pose.position.y = -0.5;
+  box_pose.position.x = 0.5;
+  box_pose.position.y = -0.3;
   box_pose.position.z = 0.4;
 
   collision_object.primitives.push_back(primitive);
@@ -209,17 +233,17 @@ int main(int argc, char** argv)
   // The id of the object is used to identify it.
   primitive.type = primitive.BOX;
   primitive.dimensions.resize(3);
-  primitive.dimensions[primitive.BOX_X] = 0.6;
-  primitive.dimensions[primitive.BOX_Y] = 0.01;
+  primitive.dimensions[primitive.BOX_Y] = 0.6;
+  primitive.dimensions[primitive.BOX_X] = 0.01;
   primitive.dimensions[primitive.BOX_Z] = 0.03;
 
   collision_object.id = "box1";
   // Define a pose for the box (specified relative to frame_id)
   // geometry_msgs::Pose box_pose;
   box_pose.orientation.w = 1.0;
-  box_pose.position.x = 0;
-  box_pose.position.y = -0.3;
-  box_pose.position.z = 0.4;
+  box_pose.position.y = 0;
+  box_pose.position.x = 0.35;
+  box_pose.position.z = 0.5;
 
   collision_object.primitives.push_back(primitive);
   collision_object.primitive_poses.push_back(box_pose);
@@ -234,6 +258,42 @@ int main(int argc, char** argv)
   planning_scene_interface.addCollisionObjects(collision_objects);
   // Show text in RViz of status and wait for MoveGroup to receive and process the collision object message
   visual_tools.publishText(text_pose, "Add object", rvt::WHITE, rvt::XLARGE);
+
+  ros::ServiceClient planning_scene_diff_client =
+      node_handle.serviceClient<moveit_msgs::ApplyPlanningScene>("apply_planning_scene");
+  planning_scene_diff_client.waitForExistence();
+  // and send the diffs to the planning scene via a service call
+
+  moveit_msgs::PlanningScene planning_scene_msg; 
+  collision_detection::AllowedCollisionMatrix& acm = planning_scene_monitor->getPlanningScene()->getAllowedCollisionMatrixNonConst();
+  acm.setEntry("panda_link0", "box1", true);
+  acm.setEntry("panda_link1", "box1", true);
+  acm.setEntry("panda_link2", "box1", true);
+  acm.setEntry("panda_link3", "box1", true);
+  acm.setEntry("panda_link4", "box1", true);
+  acm.setEntry("panda_link5", "box1", true);
+
+  acm.getMessage(planning_scene_msg.allowed_collision_matrix);
+  planning_scene_msg.world.collision_objects = collision_objects;
+  planning_scene_msg.is_diff = true;
+  moveit_msgs::ApplyPlanningScene srv;
+  srv.request.scene = planning_scene_msg;
+  planning_scene_diff_client.call(srv);
+
+  // add collision selection matrix
+  // collision_detection::AllowedCollisionMatrix acm = planning_scene.getAllowedCollisionMatrix(); 
+  // // // moveit::core::RobotState copied_state = planning_scene_interface.getCurrentState();
+
+  // // // const robot_model::LinkModel* end_effector_link = robot_model.getL
+  // acm.setEntry("panda_link0", "box1", true);
+  // acm.setEntry("panda_link1", "box1", true);
+  // acm.setEntry("panda_link2", "box1", true);
+  // acm.setEntry("panda_link3", "box1", true);
+  // acm.setEntry("panda_link4", "box1", true);
+  // acm.setEntry("panda_link5", "box1", true);
+
+  // planning_scene.getAllowedCollisionMatrixNonConst().setEntry(acm);
+  // planning_scene_interface.
 
   // (1) first plan the trajecoty to a goal without considering the obstacles
   // geometry_msgs::Pose target_pose2;
@@ -364,22 +424,22 @@ int main(int argc, char** argv)
   // joint_group_positions[6] =  42 *3.1415926/180;
 
   // Motion 6: env: cabinet_crl2, end effecotr a little bit lower along z axis than Motion 5
-  // joint_group_positions[0] = -90 * 3.1415926 / 180;
-  // joint_group_positions[1] = 52 * 3.1415926/180;
-  // joint_group_positions[2] =  0 * 3.1415926/180;
-  // joint_group_positions[3] =  -90 * 3.1415926/180;
-  // joint_group_positions[4] =  0 * 3.1415926 / 180;
-  // joint_group_positions[5] =  137 * 3.1415926/180;
-  // joint_group_positions[6] =  44 *3.1415926/180;
+  joint_group_positions[0] = 0 * 3.1415926 / 180;
+  joint_group_positions[1] = 52 * 3.1415926/180;
+  joint_group_positions[2] =  0 * 3.1415926/180;
+  joint_group_positions[3] =  -90 * 3.1415926/180;
+  joint_group_positions[4] =  0 * 3.1415926 / 180;
+  joint_group_positions[5] =  137 * 3.1415926/180;
+  joint_group_positions[6] =  44 *3.1415926/180;
 
   // moition 7: avoid the elastic band when reaching into the cabinet
-  joint_group_positions[0] = -90 * 3.1415926 / 180;
-  joint_group_positions[1] = -15 * 3.1415926/180;
-  joint_group_positions[2] =  0 * 3.1415926/180;
-  joint_group_positions[3] =  -130 * 3.1415926/180;
-  joint_group_positions[4] =  0 * 3.1415926 / 180;
-  joint_group_positions[5] =  168 * 3.1415926/180;
-  joint_group_positions[6] =  45 *3.1415926/180;
+  // joint_group_positions[0] = 0 * 3.1415926 / 180;
+  // joint_group_positions[1] = -15 * 3.1415926/180;
+  // joint_group_positions[2] =  0 * 3.1415926/180;
+  // joint_group_positions[3] =  -130 * 3.1415926/180;
+  // joint_group_positions[4] =  0 * 3.1415926 / 180;
+  // joint_group_positions[5] =  168 * 3.1415926/180;
+  // joint_group_positions[6] =  45 *3.1415926/180;
 
   move_group_interface.setJointValueTarget(joint_group_positions);
 

@@ -192,6 +192,7 @@ int main(int argc, char** argv)
   for (it2 = collision_result.contacts.begin(); it2 != collision_result.contacts.end(); ++it2)
   {
     acm.setEntry(it2->first.first, it2->first.second, true);
+    std::cout<<it2->first.first << std::endl;
   }
   collision_result.clear();
   planning_scene.checkSelfCollision(collision_request, collision_result, copied_state, acm);

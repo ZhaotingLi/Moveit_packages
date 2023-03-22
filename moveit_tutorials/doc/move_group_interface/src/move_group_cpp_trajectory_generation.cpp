@@ -300,6 +300,30 @@ int main(int argc, char** argv)
   // std::vector<moveit_msgs::CollisionObject> collision_objects;
   collision_objects.push_back(collision_object);
 
+     // add 6th-- back borad of the cabinet 
+  // The id of the object is used to identify it.
+  primitive.type = primitive.BOX;
+  primitive.dimensions.resize(3);
+  primitive.dimensions[primitive.BOX_Y] = 0.6;
+  primitive.dimensions[primitive.BOX_X] = 0.02;
+  primitive.dimensions[primitive.BOX_Z] = 0.8;
+
+  collision_object.id = "box1";
+  // Define a pose for the box (specified relative to frame_id)
+  // geometry_msgs::Pose box_pose;
+  box_pose.orientation.w = 1.0;
+  box_pose.position.y = 0;
+  box_pose.position.x = 0.65 + obs_pos_x_bias;
+  box_pose.position.z = 0.4;
+
+  collision_object.primitives.push_back(primitive);
+  collision_object.primitive_poses.push_back(box_pose);
+  collision_object.operation = collision_object.ADD;
+
+  // std::vector<moveit_msgs::CollisionObject> collision_objects;
+  collision_objects.push_back(collision_object);
+
+
   // Now, let's add the collision object into the world
   // (using a vector that could contain additional objects)
   ROS_INFO_NAMED("tutorial", "Add an object into the world");

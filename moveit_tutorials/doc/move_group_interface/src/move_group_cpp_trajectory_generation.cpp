@@ -244,8 +244,8 @@ int main(int argc, char** argv)
   box_pose.orientation.w = 1.0;
   box_pose.position.y = 0;
   box_pose.position.x = 0.35 + obs_pos_x_bias;
-  // box_pose.position.z = 0.5 - primitive.dimensions[primitive.BOX_Z]/2;
-  box_pose.position.z = 0.4 - primitive.dimensions[primitive.BOX_Z]/2;
+  box_pose.position.z = 0.45 - primitive.dimensions[primitive.BOX_Z]/2;
+  // box_pose.position.z = 0.4 - primitive.dimensions[primitive.BOX_Z]/2;
 
   collision_object.primitives.push_back(primitive);
   collision_object.primitive_poses.push_back(box_pose);
@@ -496,7 +496,7 @@ int main(int argc, char** argv)
   // joint_group_positions[5] =  137 * 3.1415926/180;
   // joint_group_positions[6] =  42 *3.1415926/180;
 
-  // Motion 6: env: cabinet_crl2, end effecotr a little bit lower along z axis than Motion 5
+  // // Motion 6: env: cabinet_crl2, end effecotr a little bit lower along z axis than Motion 5
   joint_group_positions[0] = 0 * 3.1415926 / 180;
   joint_group_positions[1] = 52 * 3.1415926/180;
   joint_group_positions[2] =  0 * 3.1415926/180;
@@ -504,6 +504,16 @@ int main(int argc, char** argv)
   joint_group_positions[4] =  0 * 3.1415926 / 180;
   joint_group_positions[5] =  137 * 3.1415926/180;
   joint_group_positions[6] =  44 *3.1415926/180;
+
+  // Motion 6.2: env: cabinet_crl2, self motion of Motion 6
+  // joint_group_positions[0] = 0 * 3.1415926 / 180;
+  // joint_group_positions[1] = 46 * 3.1415926/180;
+  // joint_group_positions[2] =  0 * 3.1415926/180;
+  // joint_group_positions[3] =  -109 * 3.1415926/180;
+  // joint_group_positions[4] =  0 * 3.1415926 / 180;
+  // joint_group_positions[5] =  167 * 3.1415926/180;
+  // joint_group_positions[6] =  44 *3.1415926/180;
+
 
   // moition 7: avoid the elastic band when reaching into the cabinet
   // joint_group_positions[0] = 0 * 3.1415926 / 180;

@@ -21,6 +21,8 @@ find_package(catkin REQUIRED COMPONENTS
 )
 moveit_build_options()
 
+# set(ENV{OMPL_INCLUDE_DIRS} "/usr/local/include/ompl-1.6/")
+
 find_package(ompl REQUIRED)
 include_directories(SYSTEM ${catkin_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS} ${OMPL_INCLUDE_DIRS})
 include_directories(include)

@@ -236,7 +236,7 @@ int main(int argc, char** argv)
   primitive.dimensions.resize(3);
   primitive.dimensions[primitive.BOX_Y] = 0.6;
   primitive.dimensions[primitive.BOX_X] = 0.01;
-  primitive.dimensions[primitive.BOX_Z] = 0.3;   // 0.03
+  primitive.dimensions[primitive.BOX_Z] = 0.03;   // 0.03
 
   collision_object.id = "box1";
   // Define a pose for the box (specified relative to frame_id)
@@ -244,7 +244,8 @@ int main(int argc, char** argv)
   box_pose.orientation.w = 1.0;
   box_pose.position.y = 0;
   box_pose.position.x = 0.35 + obs_pos_x_bias;
-  box_pose.position.z = 0.5 - primitive.dimensions[primitive.BOX_Z]/2;
+  // box_pose.position.z = 0.5 - primitive.dimensions[primitive.BOX_Z]/2;
+  box_pose.position.z = 0.4 - primitive.dimensions[primitive.BOX_Z]/2;
 
   collision_object.primitives.push_back(primitive);
   collision_object.primitive_poses.push_back(box_pose);
@@ -289,8 +290,8 @@ int main(int argc, char** argv)
   // geometry_msgs::Pose box_pose;
   box_pose.orientation.w = 1.0;
   box_pose.position.y = 0;
-  box_pose.position.x = 0;
-  box_pose.position.z = -0.01;
+  box_pose.position.x = 0.5;
+  box_pose.position.z = -0.05;
 
   collision_object.primitives.push_back(primitive);
   collision_object.primitive_poses.push_back(box_pose);

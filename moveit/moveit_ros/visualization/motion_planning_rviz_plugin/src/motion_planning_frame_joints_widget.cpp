@@ -308,13 +308,28 @@ void MotionPlanningFrameJointsWidget::updateNullspaceSliders()
   if (model && model->getJointModelGroup() && model->getJointModelGroup()->isChain())
   {
     model->getRobotState().updateLinkTransforms();
-    Eigen::MatrixXd jacobian;
+    Eigen::Vector3d ee_point_local;  // position of end effector in the local frame of link 7
+    // ee_point_local << 0, 0, -0.17;
+    ee_point_local << 0.0212, 0.0212,  0.17;
+    Eigen::Vector3d ee_point_2_local;  // position of end effector in the local frame of link 7
+    ee_point_2_local << -0.0212, -0.0212, 0.17;
+
+    Eigen::MatrixXd jacobian_all;
     if (!model->getRobotState().getJacobian(model->getJointModelGroup(),
                                             model->getJointModelGroup()->getLinkModels().back(),
-                                            Eigen::Vector3d::Zero(), jacobian, false))
+                                            ee_point_local, jacobian_all, false))
+      goto cleanup;
+    Eigen::MatrixXd jacobian_all_2;
+    if (!model->getRobotState().getJacobian(model->getJointModelGroup(),
+                                            model->getJointModelGroup()->getLinkModels().back(),
+                                            ee_point_2_local, jacobian_all_2, false))
       goto cleanup;
 
+    Eigen::MatrixXd jacobian(6, 7);
+    jacobian.block(0, 0, 3, 7) = jacobian_all.block(0, 0, 3, 7);
+    jacobian.block(3, 0, 3, 7) = jacobian_all_2.block(0, 0, 3, 7);
     svd_.compute(jacobian, Eigen::ComputeFullV);
+
     Eigen::Index rank = svd_.rank();
     std::size_t ns_dim = svd_.cols() - rank;
     Eigen::MatrixXd ns(svd_.cols(), ns_dim);
@@ -338,6 +353,10 @@ void MotionPlanningFrameJointsWidget::updateNullspaceSliders()
       available[index] = -1;  // mark index as taken
     }
     nullspace_ = ns;
+
+    std::cout<<"jacobian: " << jacobian << std::endl;
+    std::cout<<"available: " << available << std::endl;
+    std::cout<<"nullspace_: " << nullspace_ << std::endl;
   }
 
 cleanup:
@@ -365,6 +384,7 @@ QSlider* MotionPlanningFrameJointsWidget::createNSSlider(int i)
 
 void MotionPlanningFrameJointsWidget::jogNullspace(double value)
 {
+  std::cout<<"value: " << value << std::endl;
   if (value == 0)
     return;
 

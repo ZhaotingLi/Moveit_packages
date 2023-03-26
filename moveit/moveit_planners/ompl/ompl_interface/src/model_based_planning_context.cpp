@@ -72,6 +72,8 @@
 #include "ompl/base/objectives/MaximizeMinClearanceObjective.h"
 #include <ompl/geometric/planners/prm/LazyPRM.h>
 
+#include "ompl/base/objectives/DeformedPathOptimizationObjective.h"
+
 namespace ompl_interface
 {
 constexpr char LOGNAME[] = "model_based_planning_context";
@@ -326,6 +328,11 @@ void ompl_interface::ModelBasedPlanningContext::useConfig()
     {
       objective =
           std::make_shared<ompl::base::MaximizeMinClearanceObjective>(ompl_simple_setup_->getSpaceInformation());
+    }
+    else if (optimizer == "DeformedPathOptimizationObjective")
+    {
+      objective =
+          std::make_shared<ompl::base::DeformedPathOptimizationObjective>(ompl_simple_setup_->getSpaceInformation());
     }
     else
     {

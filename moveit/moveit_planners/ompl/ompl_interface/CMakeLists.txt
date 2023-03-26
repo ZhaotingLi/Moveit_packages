@@ -20,6 +20,34 @@ add_library(${MOVEIT_LIB_NAME}
 )
 set_target_properties(${MOVEIT_LIB_NAME} PROPERTIES VERSION "${${PROJECT_NAME}_VERSION}")
 
+find_package(OsqpEigen REQUIRED)
+find_package(PythonLibs REQUIRED) # matplotlibcpp needs this
+# matplot++ required (2) 
+include_directories(${PYTHON_INCLUDE_DIRS})
+
+# find_package(catkin REQUIRED COMPONENTS contact_detection)
+include_directories(/home/lzt/catkin_crl/src/franka_ros/contact_detection/include)
+link_directories(${catkin_INCLUDE_DIRS})
+
+add_library(contact_detection 
+            /home/lzt/catkin_crl/src/franka_ros/contact_detection/src/mesh_model/mesh_loader.cpp
+            /home/lzt/catkin_crl/src/franka_ros/contact_detection/src/mesh_model/tinyxml2.cpp
+            /home/lzt/catkin_crl/src/franka_ros/contact_detection/src/contact_detection_simplified_model.cpp
+            /home/lzt/catkin_crl/src/franka_ros/contact_detection/src/contact_detection_core.cpp
+            /home/lzt/catkin_crl/src/franka_ros/contact_detection/src/robot/robot.cpp
+            /home/lzt/catkin_crl/src/franka_ros/contact_detection/src/robot/utils.cpp
+            /home/lzt/catkin_crl/src/franka_ros/contact_detection/src/robot/urdfLoader.cpp
+            /home/lzt/catkin_crl/src/franka_ros/contact_detection/src/helpers/helpers.cpp
+            /home/lzt/catkin_crl/src/franka_ros/contact_detection/src/utils/logger.cpp
+            /home/lzt/catkin_crl/src/franka_ros/contact_detection/src/utils/utils.cpp
+            )
+target_include_directories(contact_detection PUBLIC ${OMPL_INCLUDE_DIRS} /home/lzt/catkin_crl/src/franka_ros/contact_detection/include)
+target_link_libraries(contact_detection ${OMPL_LIBRARIES} ${catkin_LIBRARIES} OsqpEigen::OsqpEigen)
+
+target_link_libraries(${MOVEIT_LIB_NAME} contact_detection)
+
+
+
 find_package(OpenMP REQUIRED)
 
 target_link_libraries(${MOVEIT_LIB_NAME} ${OMPL_LIBRARIES} ${catkin_LIBRARIES} ${Boost_LIBRARIES})

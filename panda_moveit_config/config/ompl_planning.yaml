@@ -1,12 +1,12 @@
 planner_configs:
   AnytimePathShortening:
-    optimization_objective: MechanicalWorkOptimizationObjective
+    optimization_objective: DeformedPathOptimizationObjective
     type: geometric::AnytimePathShortening
     shortcut: true  # Attempt to shortcut all new solution paths
     hybridize: true  # Compute hybrid solution trajectories
     max_hybrid_paths: 256  # Number of hybrid paths generated per iteration
-    num_planners: 3  # The number of default planners to use for planning
-    planners: "RRTConnect,BiTRRT,RRTstar" 
+    num_planners: 4  # The number of default planners to use for planning
+    planners: "RRTConnect,BiTRRT,RRTstar,TRRT" 
     # planners: "RRT[range=0.0 goal_bias=0.1],PRM,RRTConnect,BiTRRT,RRTstar"  # A comma-separated list of planner types (e.g., "PRM,EST,RRTConnect"Optionally, planner parameters can be passed to change the default:"PRM[max_nearest_neighbors=5],EST[goal_bias=.5],RRT[range=10. goal_bias=.1]"
   SBL:
     type: geometric::SBL

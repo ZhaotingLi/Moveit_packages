@@ -5,8 +5,11 @@ planner_configs:
     shortcut: true  # Attempt to shortcut all new solution paths
     hybridize: true  # Compute hybrid solution trajectories
     max_hybrid_paths: 256  # Number of hybrid paths generated per iteration
-    num_planners: 4  # The number of default planners to use for planning
-    planners: "RRTConnect,BiTRRT,RRTstar,TRRT" 
+    num_planners: 1  # The number of default planners to use for planning
+    planners: "BiTRRT" 
+    # planners: "BiTRRT[range=0.04],TRRT" 
+    # termination_condition: Iteration[10000000]
+    # planners: "RRTConnect,BiTRRT,RRTstar,TRRT" 
     # planners: "RRT[range=0.0 goal_bias=0.1],PRM,RRTConnect,BiTRRT,RRTstar"  # A comma-separated list of planner types (e.g., "PRM,EST,RRTConnect"Optionally, planner parameters can be passed to change the default:"PRM[max_nearest_neighbors=5],EST[goal_bias=.5],RRT[range=10. goal_bias=.1]"
   SBL:
     type: geometric::SBL
@@ -130,7 +133,7 @@ planner_configs:
     dense_delta_fraction: 0.001  # delta fraction for interface detection. default: 0.001
     max_failures: 5000  # maximum consecutive failure limit. default: 5000
 $(arg arm_id)_arm: &arm_config
-  default_planner_config: AnytimePathShortening
+  default_planner_config: BiTRRT
   planner_configs:
     - AnytimePathShortening
     - SBL
@@ -157,7 +160,7 @@ $(arg arm_id)_arm: &arm_config
     - SPARS
     - SPARStwo
   projection_evaluator: joints($(arg arm_id)_joint1,$(arg arm_id)_joint2)
-  longest_valid_segment_fraction: 0.001
+  longest_valid_segment_fraction: 0.01
 $(arg arm_id)_manipulator: *arm_config
 $(arg arm_id)_hand:
   planner_configs:

@@ -532,7 +532,7 @@ int main(int argc, char** argv)
   // or set explicit factors in your code if you need your robot to move faster.
   move_group_interface.setMaxVelocityScalingFactor(0.06);
   move_group_interface.setMaxAccelerationScalingFactor(0.1);
-  move_group_interface.setPlanningTime(60.0);
+  move_group_interface.setPlanningTime(10.0);
 
   bool success = (move_group_interface.plan(my_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
   ROS_INFO_NAMED("tutorial", "Visualizing plan 2 (joint space goal) %s", success ? "" : "FAILED");

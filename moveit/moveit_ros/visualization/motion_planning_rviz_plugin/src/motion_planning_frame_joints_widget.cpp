@@ -354,9 +354,9 @@ void MotionPlanningFrameJointsWidget::updateNullspaceSliders()
     }
     nullspace_ = ns;
 
-    std::cout<<"jacobian: " << jacobian << std::endl;
-    std::cout<<"available: " << available << std::endl;
-    std::cout<<"nullspace_: " << nullspace_ << std::endl;
+    // std::cout<<"jacobian: " << jacobian << std::endl;
+    // std::cout<<"available: " << available << std::endl;
+    // std::cout<<"nullspace_: " << nullspace_ << std::endl;
   }
 
 cleanup:
@@ -384,7 +384,7 @@ QSlider* MotionPlanningFrameJointsWidget::createNSSlider(int i)
 
 void MotionPlanningFrameJointsWidget::jogNullspace(double value)
 {
-  std::cout<<"value: " << value << std::endl;
+  // std::cout<<"value: " << value << std::endl;
   if (value == 0)
     return;
 

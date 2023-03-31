@@ -153,7 +153,7 @@ bool ompl_interface::OMPLInterface::loadPlannerConfiguration(
 
   // read parameters specific for this configuration
   for (std::pair<const std::string, XmlRpc::XmlRpcValue>& element : xml_config)
-  {
+  { 
     if (element.second.getType() == XmlRpc::XmlRpcValue::TypeString)
       planner_config.config[element.first] = static_cast<std::string>(element.second);
     else if (element.second.getType() == XmlRpc::XmlRpcValue::TypeDouble)
@@ -162,6 +162,9 @@ bool ompl_interface::OMPLInterface::loadPlannerConfiguration(
       planner_config.config[element.first] = std::to_string(static_cast<int>(element.second));
     else if (element.second.getType() == XmlRpc::XmlRpcValue::TypeBoolean)
       planner_config.config[element.first] = std::to_string(static_cast<bool>(element.second));
+
+    //print for debugging
+    ROS_DEBUG_NAMED(LOGNAME, "Debugging planner config  %s: %s", element.first.c_str(), planner_config.config[element.first].c_str());
   }
 
   return true;

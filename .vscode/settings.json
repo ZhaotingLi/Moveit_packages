@@ -73,6 +73,7 @@
         "variant": "cpp",
         "core": "cpp",
         "numericaldiff": "cpp",
-        "valarray": "cpp"
+        "valarray": "cpp",
+        "*.ipp": "cpp"
     }
 }

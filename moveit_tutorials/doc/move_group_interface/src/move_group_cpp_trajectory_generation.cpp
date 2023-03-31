@@ -37,6 +37,9 @@
 #include <moveit/move_group_interface/move_group_interface.h>
 #include <moveit/planning_scene_interface/planning_scene_interface.h>
 
+#include <moveit/planning_interface/planning_interface.h>
+#include <moveit/planning_pipeline/planning_pipeline.h>
+
 #include <moveit_msgs/DisplayRobotState.h>
 #include <moveit_msgs/DisplayTrajectory.h>
 
@@ -54,6 +57,7 @@
 #include <moveit/kinematic_constraints/utils.h>
 
 #include <moveit_msgs/ApplyPlanningScene.h>
+
 
 // The circle constant tau = 2*pi. One tau is one rotation in radians.
 const double tau = 2 * M_PI;
@@ -144,6 +148,47 @@ int main(int argc, char** argv)
       planning_scene_monitor::PlanningSceneMonitor::DEFAULT_PLANNING_SCENE_WORLD_TOPIC,
       false /* skip octomap monitor */);
   planning_scene_monitor->startStateMonitor();
+
+
+  robot_model_loader::RobotModelLoaderPtr robot_model_loader(
+      new robot_model_loader::RobotModelLoader("robot_description"));
+  robot_model::RobotModelPtr robot_model = robot_model_loader->getModel();
+
+  planning_scene::PlanningScenePtr planning_scene(new planning_scene::PlanningScene(robot_model));
+
+  // create a planning pipeline
+  // planning_pipeline::PlanningPipelinePtr planning_pipeline =
+  //     std::make_shared<planning_pipeline::PlanningPipeline>(robot_model, node_handle, "ompl_interface/OMPLPlanner");
+  planning_pipeline::PlanningPipelinePtr planning_pipeline(
+      new planning_pipeline::PlanningPipeline(robot_model, node_handle, "planning_plugin", "request_adapters"));
+  // get the current planner configurations
+  planning_interface::PlannerConfigurationMap planner_configs =
+      planning_pipeline->getPlannerManager()->getPlannerConfigurations();
+    
+  const std::string planner_id = "geometric::BiTRRT";
+  planning_interface::PlannerConfigurationSettings planner_config;
+  planner_config.name = "my_planner";
+  planner_config.group = PLANNING_GROUP;
+  planner_config.config["type"] = planner_id;
+  planner_config.config["range"] = "0.5";
+  // planner_config.config["cost_threshold"] = "0.0";
+  planner_configs[PLANNING_GROUP] = planner_config;
+  planning_pipeline->getPlannerManager()->setPlannerConfigurations(planner_configs);
+
+  // print planner_configs[i].name, also print the config
+  // print planner_configs[PLANNING_GROUP].config
+  // print planner_configs[PLANNING_GROUP].config[planner_id]
+  for(auto j = planner_configs[PLANNING_GROUP].config.begin(); j != planner_configs[PLANNING_GROUP].config.end(); j++){
+    std::cout << j->first << std::endl;
+    std::cout << j->second << std::endl;
+  }
+  
+  // getPlanningAlgorithms
+  std::vector<std::string> algorithms;
+  planning_pipeline->getPlannerManager()->getPlanningAlgorithms(algorithms);
+  for(auto i = algorithms.begin(); i != algorithms.end(); i++){
+    std::cout << *i << std::endl;
+  }
 
   // Visualization
   // ^^^^^^^^^^^^^
@@ -520,23 +565,51 @@ int main(int argc, char** argv)
   // joint_group_positions[5] =  168 * 3.1415926/180;
   // joint_group_positions[6] =  45 *3.1415926/180;
 
-  move_group_interface.setJointValueTarget(joint_group_positions);
+  bool success = false;
+  /*[Begin] Method 01 use move group interface, planner is executed in the move_group node launched by demo/real robot*/
+  // move_group_interface.setJointValueTarget(joint_group_positions);
 
-  // We lower the allowed maximum velocity and acceleration to 5% of their maximum.
-  // The default values are 10% (0.1).
-  // Set your preferred defaults in the joint_limits.yaml file of your robot's moveit_config
-  // or set explicit factors in your code if you need your robot to move faster.
-  move_group_interface.setMaxVelocityScalingFactor(0.06);
-  move_group_interface.setMaxAccelerationScalingFactor(0.1);
-  move_group_interface.setPlanningTime(10.0);
+  // // We lower the allowed maximum velocity and acceleration to 5% of their maximum.
+  // // The default values are 10% (0.1).
+  // // Set your preferred defaults in the joint_limits.yaml file of your robot's moveit_config
+  // // or set explicit factors in your code if you need your robot to move faster.
+  // move_group_interface.setMaxVelocityScalingFactor(0.06);
+  // move_group_interface.setMaxAccelerationScalingFactor(0.1);
+  // move_group_interface.setPlanningTime(10.0);
 
-  bool success = (move_group_interface.plan(my_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
-  ROS_INFO_NAMED("tutorial", "Visualizing plan 2 (joint space goal) %s", success ? "" : "FAILED");
+  // success = (move_group_interface.plan(my_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
+  // ROS_INFO_NAMED("tutorial", "Visualizing plan 2 (joint space goal) %s", success ? "" : "FAILED");
+  /*[End] use move group interface*/
+
+  /*[Begin] Method02 use planning pipeline, planner is executed in this node, so we can modify the planner config in real time*/
+  planning_interface::MotionPlanRequest req;
+  planning_interface::MotionPlanResponse res; 
+
+  robot_state::RobotState goal_state(robot_model);
+  goal_state.setJointGroupPositions(joint_model_group, joint_group_positions);
+  moveit_msgs::Constraints joint_goal = kinematic_constraints::constructGoalConstraints(goal_state, joint_model_group);
+
+  req.goal_constraints.clear();
+  req.group_name = "panda_arm";
+  req.goal_constraints.push_back(joint_goal);
+
+  planning_pipeline->generatePlan(planning_scene, req, res);
+  /* Check that the planning was successful */
+  if (res.error_code_.val != res.error_code_.SUCCESS)
+  {
+    ROS_ERROR("Could not compute plan successfully");
+    return 0;
+  }else{
+    success = true;
+  }
+
 
   // Visualize the plan in RViz
+  moveit_msgs::MotionPlanResponse response;
+  res.getMessage(response);
   visual_tools.deleteAllMarkers();
   visual_tools.publishText(text_pose, "Joint Space Goal", rvt::WHITE, rvt::XLARGE);
-  visual_tools.publishTrajectoryLine(my_plan.trajectory_, joint_model_group);
+  visual_tools.publishTrajectoryLine(response.trajectory, joint_model_group);
   
   visual_tools.trigger();
   visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to excuate the trajectoroy");

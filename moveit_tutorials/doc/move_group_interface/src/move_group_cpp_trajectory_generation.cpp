@@ -58,6 +58,9 @@
 
 #include <moveit_msgs/ApplyPlanningScene.h>
 
+#include <moveit/robot_state/conversions.h>
+
+#include <moveit/trajectory_processing/iterative_time_parameterization.h>
 
 // The circle constant tau = 2*pi. One tau is one rotation in radians.
 const double tau = 2 * M_PI;
@@ -152,7 +155,7 @@ int main(int argc, char** argv)
 
   robot_model_loader::RobotModelLoaderPtr robot_model_loader(
       new robot_model_loader::RobotModelLoader("robot_description"));
-  robot_model::RobotModelPtr robot_model = robot_model_loader->getModel();
+  moveit::core::RobotModelPtr robot_model = robot_model_loader->getModel();
 
   planning_scene::PlanningScenePtr planning_scene(new planning_scene::PlanningScene(robot_model));
 
@@ -565,6 +568,10 @@ int main(int argc, char** argv)
   // joint_group_positions[5] =  168 * 3.1415926/180;
   // joint_group_positions[6] =  45 *3.1415926/180;
 
+  moveit::core::RobotStatePtr robot_state(
+    new moveit::core::RobotState(planning_scene_monitor::LockedPlanningSceneRO(planning_scene_monitor)->getCurrentState()));
+
+
   bool success = false;
   /*[Begin] Method 01 use move group interface, planner is executed in the move_group node launched by demo/real robot*/
   // move_group_interface.setJointValueTarget(joint_group_positions);
@@ -585,12 +592,13 @@ int main(int argc, char** argv)
   planning_interface::MotionPlanRequest req;
   planning_interface::MotionPlanResponse res; 
 
-  robot_state::RobotState goal_state(robot_model);
+  // robot_state = planning_scene_monitor::LockedPlanningSceneRO(planning_scene_monitor)->getCurrentStateUpdated(response.trajectory_start);
+  moveit::core::robotStateToRobotStateMsg(*robot_state, req.start_state);
+  moveit::core::RobotState goal_state(*robot_state);
   goal_state.setJointGroupPositions(joint_model_group, joint_group_positions);
   moveit_msgs::Constraints joint_goal = kinematic_constraints::constructGoalConstraints(goal_state, joint_model_group);
 
   req.goal_constraints.clear();
-  req.planner_id
   req.group_name = "panda_arm";
   req.goal_constraints.push_back(joint_goal);
 
@@ -608,9 +616,29 @@ int main(int argc, char** argv)
   // Visualize the plan in RViz
   moveit_msgs::MotionPlanResponse response;
   res.getMessage(response);
+
+  // time parameterization
+  moveit_msgs::RobotTrajectory trajectory;
+
+
+  robot_trajectory::RobotTrajectory rt(move_group_interface.getRobotModel(), move_group_interface.getName());
+  rt.setRobotTrajectoryMsg(*move_group_interface.getCurrentState(), response.trajectory);
+  trajectory_processing::IterativeParabolicTimeParameterization iptp;
+  success =
+      iptp.computeTimeStamps(rt, 0.2, 0.1); // velocity scale + acceleration scale
+  rt.getRobotTrajectoryMsg(trajectory);
+
+  ros::Publisher display_publisher =
+      node_handle.advertise<moveit_msgs::DisplayTrajectory>("/move_group/display_planned_path", 1, true);
+  moveit_msgs::DisplayTrajectory display_trajectory;
+  display_trajectory.trajectory_start = response.trajectory_start;
+  display_trajectory.trajectory.push_back(response.trajectory);
+  display_publisher.publish(display_trajectory);
+
+
   visual_tools.deleteAllMarkers();
   visual_tools.publishText(text_pose, "Joint Space Goal", rvt::WHITE, rvt::XLARGE);
-  visual_tools.publishTrajectoryLine(response.trajectory, joint_model_group);
+  visual_tools.publishTrajectoryLine(display_trajectory.trajectory.back(), joint_model_group);
   
   visual_tools.trigger();
   visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to excuate the trajectoroy");
@@ -620,6 +648,10 @@ int main(int argc, char** argv)
 
   // (4) excuate the planned trajectory
   if(success){
+    moveit::planning_interface::MoveGroupInterface::Plan my_plan;
+    my_plan.trajectory_ = trajectory;
+    my_plan.start_state_ = response.trajectory_start;
+    my_plan.planning_time_ = 10;
     move_group_interface.execute(my_plan);
   }
   // // move_group_interface.move();

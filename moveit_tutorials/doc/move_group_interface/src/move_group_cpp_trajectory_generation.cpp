@@ -515,8 +515,9 @@ int main(int argc, char** argv)
 
   bool success = false;  // whether a single plan finds a feasible trajectory solution
   bool finished = false; // whether the task is finished
-  int current_state_index = 1; // 1: reach into the goal   0: return to the start
+  int current_state_index = 1; // 1: reach into the goal   0: return to the start   2: waiting
 
+  // need to update via other ros nodes: (1) the joint goal positions (2) planner interal parameter (pins state) (3) current state (4) the position of the elastic band (ready to be removed if not accurate)
   while(!finished){
     /*[Begin] Method 01 use move group interface, planner is executed in the move_group node launched by demo/real robot*/
     // move_group_interface.setJointValueTarget(joint_group_positions);
@@ -548,7 +549,7 @@ int main(int argc, char** argv)
       req.goal_constraints.clear();
       req.group_name = "panda_arm";
       req.goal_constraints.push_back(joint_goal);
-      current_state_index = 0;
+      current_state_index = 2;
     }else if(current_state_index == 0){
       moveit::core::RobotStatePtr robot_state(
           new moveit::core::RobotState(planning_scene_monitor::LockedPlanningSceneRO(planning_scene_monitor)->getCurrentState()));
@@ -560,7 +561,7 @@ int main(int argc, char** argv)
       req.goal_constraints.clear();
       req.group_name = "panda_arm";
       req.goal_constraints.push_back(joint_goal);
-      current_state_index = 1;
+      current_state_index = 2;
     }
 
     planning_pipeline->generatePlan(planning_scene, req, res);

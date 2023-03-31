@@ -170,8 +170,8 @@ int main(int argc, char** argv)
   planner_config.name = "my_planner";
   planner_config.group = PLANNING_GROUP;
   planner_config.config["type"] = planner_id;
-  planner_config.config["range"] = "0.5";
-  // planner_config.config["cost_threshold"] = "0.0";
+  planner_config.config["pin1_x"] = "0.5";
+  planner_config.config["pin1_z"] = "0.4";
   planner_configs[PLANNING_GROUP] = planner_config;
   planning_pipeline->getPlannerManager()->setPlannerConfigurations(planner_configs);
 
@@ -590,6 +590,7 @@ int main(int argc, char** argv)
   moveit_msgs::Constraints joint_goal = kinematic_constraints::constructGoalConstraints(goal_state, joint_model_group);
 
   req.goal_constraints.clear();
+  req.planner_id
   req.group_name = "panda_arm";
   req.goal_constraints.push_back(joint_goal);
 

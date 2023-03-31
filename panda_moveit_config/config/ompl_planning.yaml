@@ -104,6 +104,10 @@ planner_configs:
     frountier_threshold: 0.0  # dist new state to nearest neighbor to disqualify as frontier. default: 0.0 set in setup()
     frountier_node_ratio: 0.1  # 1/10, or 1 nonfrontier for every 10 frontier. default: 0.1
     cost_threshold: 1e300  # the cost threshold. Any motion cost that is not better will not be expanded. default: inf
+    mode: 0 
+    pin1_z: 0.425 # assume pin2_z = pin1_z
+    pin1_x: 0.5  # assume pin2_x = pin1_x
+    # assume pin1_y = 0.3 = - pin2_y 
   LBTRRT:
     type: geometric::LBTRRT
     range: 0.0  # Max motion added to tree. ==> maxDistance_ default: 0.0, if 0.0, set on setup()

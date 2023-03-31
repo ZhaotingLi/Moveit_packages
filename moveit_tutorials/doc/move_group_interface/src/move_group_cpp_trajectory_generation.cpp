@@ -212,7 +212,7 @@ int main(int argc, char** argv)
   visual_tools.publishText(text_pose, "MoveGroupInterface Demo", rvt::WHITE, rvt::XLARGE);
 
   // Batch publishing is used to reduce the number of messages being sent to RViz for large visualizations
-  visual_tools.trigger();
+  // visual_tools.trigger();
 
   // Getting Basic Information
   // ^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -230,7 +230,7 @@ int main(int argc, char** argv)
 
   // Start the demo
   // ^^^^^^^^^^^^^^^^^^^^^^^^^
-  visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to start the demo");
+  // visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to start the demo");
 
   double obs_pos_x_bias = 0.15;
   moveit_msgs::CollisionObject collision_object;
@@ -397,78 +397,20 @@ int main(int argc, char** argv)
   srv.request.scene = planning_scene_msg;
   planning_scene_diff_client.call(srv);
 
-  // add collision selection matrix
-  // collision_detection::AllowedCollisionMatrix acm = planning_scene.getAllowedCollisionMatrix(); 
-  // // // moveit::core::RobotState copied_state = planning_scene_interface.getCurrentState();
+  
 
-  // // // const robot_model::LinkModel* end_effector_link = robot_model.getL
-  // acm.setEntry("panda_link0", "box1", true);
-  // acm.setEntry("panda_link1", "box1", true);
-  // acm.setEntry("panda_link2", "box1", true);
-  // acm.setEntry("panda_link3", "box1", true);
-  // acm.setEntry("panda_link4", "box1", true);
-  // acm.setEntry("panda_link5", "box1", true);
 
-  // planning_scene.getAllowedCollisionMatrixNonConst().setEntry(acm);
-  // planning_scene_interface.
-
-  // (1) first plan the trajecoty to a goal without considering the obstacles
-  // geometry_msgs::Pose target_pose2;
-  // target_pose2.orientation.x=-0.9238795;
-  // target_pose2.orientation.y = 0.3826834;
-  // target_pose2.position.x = 0.5;
-  // target_pose2.position.y = 0.0;
-  // target_pose2.position.z = 0.49;
-  // move_group_interface.setPoseTarget(target_pose2);
-
-  // // Now, we call the planner to compute the plan and visualize it.
-  // // Note that we are just planning, not asking move_group_interface
-  // // to actually move the robot.
   moveit::planning_interface::MoveGroupInterface::Plan my_plan;
-
-  // move_group_interface.setMaxVelocityScalingFactor(0.075);
-  // move_group_interface.setMaxAccelerationScalingFactor(0.075);
-  // bool success = (move_group_interface.plan(my_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
-
-  // ROS_INFO_NAMED("tutorial", "Visualizing plan 1 (pose goal) %s", success ? "" : "FAILED");
-
-  // // Visualizing plans
-  // // ^^^^^^^^^^^^^^^^^
-  // // We can also visualize the plan as a line with markers in RViz.
-  // ROS_INFO_NAMED("tutorial", "Visualizing plan 1 as trajectory line");
-  // visual_tools.publishAxisLabeled(target_pose2, "pose1");
-  // visual_tools.publishText(text_pose, "Pose Goal", rvt::WHITE, rvt::XLARGE);
-  // visual_tools.publishTrajectoryLine(my_plan.trajectory_, joint_model_group);
-  // visual_tools.trigger();
-  // visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to excuate the trajectory");
-
-  // // (2) excuate the planned trajectory
-  // // wait for some time for me to be ready for putting elastic in front of the robot
-  // ros::WallDuration(5.0).sleep();
-  // if(success){
-  //   move_group_interface.execute(my_plan);
-  // }
-  // move_group_interface.move();
-  // visual_tools.trigger();
-  // visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to stop the trajectory executation");
-
-
-  // (2.1) stop the robot during excuation 
-  // Finding: the 'next' button cannot be pressed until the robot finishes the trajectory
-  // move_group_interface.stop();
-
-  // visual_tools.trigger();
-  // visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to plan the trajectory to the start_pose");
-  // ROS_INFO_NAMED("tutorial", "plan the trajectory to the start_pose");
-  // ros::WallDuration(3.0).sleep();
 
   
   // (3) retrun to start pose
   moveit::core::RobotStatePtr current_state = move_group_interface.getCurrentState();
   // //
   // // Next get the current set of joint values for the group.
+  std::vector<double> joint_start_state;
   std::vector<double> joint_group_positions;
   current_state->copyJointGroupPositions(joint_model_group, joint_group_positions);
+  current_state->copyJointGroupPositions(joint_model_group, joint_start_state);
 
   // Now, let's modify one of the joints, plan to the new joint space goal and visualize the plan.
   // joint_group_positions[0] = -48 * 3.1415926 / 180;
@@ -568,97 +510,113 @@ int main(int argc, char** argv)
   // joint_group_positions[5] =  168 * 3.1415926/180;
   // joint_group_positions[6] =  45 *3.1415926/180;
 
-  moveit::core::RobotStatePtr robot_state(
+  moveit::core::RobotStatePtr robot_state_start(
     new moveit::core::RobotState(planning_scene_monitor::LockedPlanningSceneRO(planning_scene_monitor)->getCurrentState()));
 
+  bool success = false;  // whether a single plan finds a feasible trajectory solution
+  bool finished = false; // whether the task is finished
+  int current_state_index = 1; // 1: reach into the goal   0: return to the start
 
-  bool success = false;
-  /*[Begin] Method 01 use move group interface, planner is executed in the move_group node launched by demo/real robot*/
-  // move_group_interface.setJointValueTarget(joint_group_positions);
+  while(!finished){
+    /*[Begin] Method 01 use move group interface, planner is executed in the move_group node launched by demo/real robot*/
+    // move_group_interface.setJointValueTarget(joint_group_positions);
 
-  // // We lower the allowed maximum velocity and acceleration to 5% of their maximum.
-  // // The default values are 10% (0.1).
-  // // Set your preferred defaults in the joint_limits.yaml file of your robot's moveit_config
-  // // or set explicit factors in your code if you need your robot to move faster.
-  // move_group_interface.setMaxVelocityScalingFactor(0.06);
-  // move_group_interface.setMaxAccelerationScalingFactor(0.1);
-  // move_group_interface.setPlanningTime(10.0);
+    // // We lower the allowed maximum velocity and acceleration to 5% of their maximum.
+    // // The default values are 10% (0.1).
+    // // Set your preferred defaults in the joint_limits.yaml file of your robot's moveit_config
+    // // or set explicit factors in your code if you need your robot to move faster.
+    // move_group_interface.setMaxVelocityScalingFactor(0.06);
+    // move_group_interface.setMaxAccelerationScalingFactor(0.1);
+    // move_group_interface.setPlanningTime(10.0);
 
-  // success = (move_group_interface.plan(my_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
-  // ROS_INFO_NAMED("tutorial", "Visualizing plan 2 (joint space goal) %s", success ? "" : "FAILED");
-  /*[End] use move group interface*/
+    // success = (move_group_interface.plan(my_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
+    // ROS_INFO_NAMED("tutorial", "Visualizing plan 2 (joint space goal) %s", success ? "" : "FAILED");
+    /*[End] use move group interface*/
 
-  /*[Begin] Method02 use planning pipeline, planner is executed in this node, so we can modify the planner config in real time*/
-  planning_interface::MotionPlanRequest req;
-  planning_interface::MotionPlanResponse res; 
+    /*[Begin] Method02 use planning pipeline, planner is executed in this node, so we can modify the planner config in real time*/
+    planning_interface::MotionPlanRequest req;
+    planning_interface::MotionPlanResponse res; 
+    if(current_state_index == 1){
+      // robot_state = planning_scene_monitor::LockedPlanningSceneRO(planning_scene_monitor)->getCurrentStateUpdated(response.trajectory_start);
+      moveit::core::RobotStatePtr robot_state(
+          new moveit::core::RobotState(planning_scene_monitor::LockedPlanningSceneRO(planning_scene_monitor)->getCurrentState()));
+      moveit::core::robotStateToRobotStateMsg(*robot_state, req.start_state);
+      moveit::core::RobotState goal_state(*robot_state);
+      goal_state.setJointGroupPositions(joint_model_group, joint_group_positions);
+      moveit_msgs::Constraints joint_goal = kinematic_constraints::constructGoalConstraints(goal_state, joint_model_group);
 
-  // robot_state = planning_scene_monitor::LockedPlanningSceneRO(planning_scene_monitor)->getCurrentStateUpdated(response.trajectory_start);
-  moveit::core::robotStateToRobotStateMsg(*robot_state, req.start_state);
-  moveit::core::RobotState goal_state(*robot_state);
-  goal_state.setJointGroupPositions(joint_model_group, joint_group_positions);
-  moveit_msgs::Constraints joint_goal = kinematic_constraints::constructGoalConstraints(goal_state, joint_model_group);
+      req.goal_constraints.clear();
+      req.group_name = "panda_arm";
+      req.goal_constraints.push_back(joint_goal);
+      current_state_index = 0;
+    }else if(current_state_index == 0){
+      moveit::core::RobotStatePtr robot_state(
+          new moveit::core::RobotState(planning_scene_monitor::LockedPlanningSceneRO(planning_scene_monitor)->getCurrentState()));
+      moveit::core::robotStateToRobotStateMsg(*robot_state, req.start_state);
+      moveit::core::RobotState goal_state(*robot_state);
+      goal_state.setJointGroupPositions(joint_model_group, joint_start_state);
+      moveit_msgs::Constraints joint_goal = kinematic_constraints::constructGoalConstraints(goal_state, joint_model_group);
 
-  req.goal_constraints.clear();
-  req.group_name = "panda_arm";
-  req.goal_constraints.push_back(joint_goal);
+      req.goal_constraints.clear();
+      req.group_name = "panda_arm";
+      req.goal_constraints.push_back(joint_goal);
+      current_state_index = 1;
+    }
 
-  planning_pipeline->generatePlan(planning_scene, req, res);
-  /* Check that the planning was successful */
-  if (res.error_code_.val != res.error_code_.SUCCESS)
-  {
-    ROS_ERROR("Could not compute plan successfully");
-    return 0;
-  }else{
-    success = true;
-  }
-
-
-  // Visualize the plan in RViz
-  moveit_msgs::MotionPlanResponse response;
-  res.getMessage(response);
-
-  // time parameterization
-  moveit_msgs::RobotTrajectory trajectory;
-
-
-  robot_trajectory::RobotTrajectory rt(move_group_interface.getRobotModel(), move_group_interface.getName());
-  rt.setRobotTrajectoryMsg(*move_group_interface.getCurrentState(), response.trajectory);
-  trajectory_processing::IterativeParabolicTimeParameterization iptp;
-  success =
-      iptp.computeTimeStamps(rt, 0.2, 0.1); // velocity scale + acceleration scale
-  rt.getRobotTrajectoryMsg(trajectory);
-
-  ros::Publisher display_publisher =
-      node_handle.advertise<moveit_msgs::DisplayTrajectory>("/move_group/display_planned_path", 1, true);
-  moveit_msgs::DisplayTrajectory display_trajectory;
-  display_trajectory.trajectory_start = response.trajectory_start;
-  display_trajectory.trajectory.push_back(response.trajectory);
-  display_publisher.publish(display_trajectory);
-
-
-  visual_tools.deleteAllMarkers();
-  visual_tools.publishText(text_pose, "Joint Space Goal", rvt::WHITE, rvt::XLARGE);
-  visual_tools.publishTrajectoryLine(display_trajectory.trajectory.back(), joint_model_group);
+    planning_pipeline->generatePlan(planning_scene, req, res);
+    /* Check that the planning was successful */
+    if (res.error_code_.val != res.error_code_.SUCCESS)
+    {
+      ROS_ERROR("Could not compute plan successfully");
+      return 0;
+    }else{
+      success = true;
+    }
   
-  visual_tools.trigger();
-  visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to excuate the trajectoroy");
+    // Visualize the plan in RViz
+    moveit_msgs::MotionPlanResponse response;
+    res.getMessage(response);
 
-  ROS_INFO_NAMED("tutorial", "excuate the trajectory to the start_pose");
-  // ros::WallDuration(3.0).sleep();
+    // time parameterization
+    moveit_msgs::RobotTrajectory trajectory;
+    robot_trajectory::RobotTrajectory rt(move_group_interface.getRobotModel(), move_group_interface.getName());
+    rt.setRobotTrajectoryMsg(*move_group_interface.getCurrentState(), response.trajectory);
+    trajectory_processing::IterativeParabolicTimeParameterization iptp;
+    success =
+        iptp.computeTimeStamps(rt, 0.2, 0.1); // velocity scale + acceleration scale
+    rt.getRobotTrajectoryMsg(trajectory);
 
-  // (4) excuate the planned trajectory
-  if(success){
-    moveit::planning_interface::MoveGroupInterface::Plan my_plan;
-    my_plan.trajectory_ = trajectory;
-    my_plan.start_state_ = response.trajectory_start;
-    my_plan.planning_time_ = 10;
-    move_group_interface.execute(my_plan);
+    ros::Publisher display_publisher =
+        node_handle.advertise<moveit_msgs::DisplayTrajectory>("/move_group/display_planned_path", 1, true);
+    moveit_msgs::DisplayTrajectory display_trajectory;
+    display_trajectory.trajectory_start = response.trajectory_start;
+    display_trajectory.trajectory.push_back(response.trajectory);
+    display_publisher.publish(display_trajectory);
+
+
+    visual_tools.deleteAllMarkers();
+    visual_tools.publishText(text_pose, "Joint Space Goal", rvt::WHITE, rvt::XLARGE);
+    visual_tools.publishTrajectoryLine(display_trajectory.trajectory.back(), joint_model_group);
+    
+    // visual_tools.trigger();
+    // visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to excuate the trajectoroy");
+
+    ROS_INFO_NAMED("tutorial", "excuate the trajectory to the start_pose");
+    // ros::WallDuration(3.0).sleep();
+
+    // (4) excuate the planned trajectory
+    if(success){
+      moveit::planning_interface::MoveGroupInterface::Plan my_plan;
+      my_plan.trajectory_ = trajectory;
+      my_plan.start_state_ = response.trajectory_start;
+      my_plan.planning_time_ = 10;
+      move_group_interface.execute(my_plan);
+    }
+    // // move_group_interface.move();
+
   }
-  // // move_group_interface.move();
 
-  // visual_tools.trigger();
-  // visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to add obstacles");
-  ROS_INFO_NAMED("tutorial", "add obstacles");
+  ROS_INFO_NAMED("tutorial", "finish planning");
   // ros::WallDuration(3.0).sleep();
 
 

@@ -294,23 +294,23 @@ int main(int argc, char** argv)
 
   // // add third "elastic band"
   // // The id of the object is used to identify it.
-  // primitive.type = primitive.BOX;
-  // primitive.dimensions.resize(3);
-  // primitive.dimensions[primitive.BOX_Y] = 0.6;
-  // primitive.dimensions[primitive.BOX_X] = 0.01;
-  // primitive.dimensions[primitive.BOX_Z] = 0.03;   // 0.03
+  primitive.type = primitive.BOX;
+  primitive.dimensions.resize(3);
+  primitive.dimensions[primitive.BOX_Y] = 0.6;
+  primitive.dimensions[primitive.BOX_X] = 0.01;
+  primitive.dimensions[primitive.BOX_Z] = 0.03;   // 0.03
 
-  // collision_object.id = "box1";
-  // box_pose.orientation.w = 1.0;
-  // box_pose.position.y = 0;
-  // box_pose.position.x = 0.35 + obs_pos_x_bias;
-  // box_pose.position.z = 0.45 - primitive.dimensions[primitive.BOX_Z]/2;
-  // // box_pose.position.z = 0.4 - primitive.dimensions[primitive.BOX_Z]/2;
+  collision_object.id = "box1";
+  box_pose.orientation.w = 1.0;
+  box_pose.position.y = 0;
+  box_pose.position.x = 0.35 + obs_pos_x_bias;
+  box_pose.position.z = 0.45 - primitive.dimensions[primitive.BOX_Z]/2;
+  // box_pose.position.z = 0.4 - primitive.dimensions[primitive.BOX_Z]/2;
 
-  // collision_object.primitives.push_back(primitive);
-  // collision_object.primitive_poses.push_back(box_pose);
-  // collision_object.operation = collision_object.ADD;
-  // collision_objects.push_back(collision_object);
+  collision_object.primitives.push_back(primitive);
+  collision_object.primitive_poses.push_back(box_pose);
+  collision_object.operation = collision_object.ADD;
+  collision_objects.push_back(collision_object);
 
     // add 4th-- upper borad of the cabinet 
   // The id of the object is used to identify it.
@@ -643,7 +643,8 @@ int main(int argc, char** argv)
       current_state_index = 2;
     }
 
-    planning_pipeline->generatePlan(planning_scene, req, res);
+    // planning_pipeline->generatePlan(planning_scene, req, res); // [IMPORTANT]this line is wrong, the planning_scene is not updated
+    planning_pipeline->generatePlan(planning_scene_monitor->getPlanningScene(), req, res);
     /* Check that the planning was successful */
     if (res.error_code_.val != res.error_code_.SUCCESS)
     {

@@ -62,6 +62,8 @@
 
 #include <moveit/trajectory_processing/iterative_time_parameterization.h>
 
+#include "contact_msgs/contact_loop_status.h"
+
 // The circle constant tau = 2*pi. One tau is one rotation in radians.
 const double tau = 2 * M_PI;
 
@@ -100,6 +102,18 @@ void callback(const geometry_msgs::Wrench& msg){
   }
 }
 
+bool finished = false; // whether the task is finished
+int current_state_index = 1; // 1: reach into the goal   0: return to the start   2: waiting
+double pin1_x = 0;
+double pin1_z = 0;
+
+void contact_status_callback(const contact_msgs::contact_loop_status& msg){
+  finished = msg.is_finished;
+  current_state_index = msg.current_state_index;
+  pin1_x = msg.pin1_x;
+  pin1_z = msg.pin1_z;
+}
+
 int main(int argc, char** argv)
 {
   ros::init(argc, argv, "move_group_interface_tutorial");
@@ -109,7 +123,7 @@ int main(int argc, char** argv)
   // about the robot's state. One way to do this is to start an AsyncSpinner
   // beforehand.
 
-  ros::Subscriber sub_haptic = node_handle.subscribe("/estimated_ext_force_data", 100, callback);
+  ros::Subscriber sub_haptic = node_handle.subscribe("/contact_loop_status", 100, contact_status_callback);
 
   ros::AsyncSpinner spinner(1);
   spinner.start();
@@ -173,8 +187,8 @@ int main(int argc, char** argv)
   planner_config.name = "my_planner";
   planner_config.group = PLANNING_GROUP;
   planner_config.config["type"] = planner_id;
-  planner_config.config["pin1_x"] = "0.5";
-  planner_config.config["pin1_z"] = "0.4";
+  planner_config.config["pin1_x"] = "0";
+  planner_config.config["pin1_z"] = "0";
   planner_configs[PLANNING_GROUP] = planner_config;
   planning_pipeline->getPlannerManager()->setPlannerConfigurations(planner_configs);
 
@@ -514,8 +528,6 @@ int main(int argc, char** argv)
     new moveit::core::RobotState(planning_scene_monitor::LockedPlanningSceneRO(planning_scene_monitor)->getCurrentState()));
 
   bool success = false;  // whether a single plan finds a feasible trajectory solution
-  bool finished = false; // whether the task is finished
-  int current_state_index = 1; // 1: reach into the goal   0: return to the start   2: waiting
 
   // need to update via other ros nodes: (1) the joint goal positions (2) planner interal parameter (pins state) (3) current state (4) the position of the elastic band (ready to be removed if not accurate)
   while(!finished){
@@ -538,6 +550,72 @@ int main(int argc, char** argv)
     planning_interface::MotionPlanRequest req;
     planning_interface::MotionPlanResponse res; 
     if(current_state_index == 1){
+      if(pin1_z!= 0){
+        std::cout<<"put the elastic band into planning process"<<std::endl;
+        // update the pins state for ompl planner
+        planner_configs =
+        planning_pipeline->getPlannerManager()->getPlannerConfigurations();
+
+        planner_config.name = "my_planner";
+        planner_config.group = PLANNING_GROUP;
+        planner_config.config["type"] = planner_id;
+        planner_config.config["pin1_x"] = std::to_string(pin1_x);
+        planner_config.config["pin1_z"] = std::to_string(pin1_z);
+        planner_configs[PLANNING_GROUP] = planner_config;
+        planning_pipeline->getPlannerManager()->setPlannerConfigurations(planner_configs);
+
+        // add elastic band obstacle in moveit
+        moveit_msgs::CollisionObject collision_object_eb;
+        collision_object_eb.header.frame_id = move_group_interface.getPlanningFrame();
+
+        // Define a box to add to the world.
+        shape_msgs::SolidPrimitive primitive_band;
+        primitive_band.type = primitive_band.BOX;
+        primitive_band.dimensions.resize(3);
+        primitive_band.dimensions[primitive_band.BOX_Y] = 0.6;
+        primitive_band.dimensions[primitive_band.BOX_X] = 0.01;
+        primitive_band.dimensions[primitive_band.BOX_Z] = 0.05;   // 0.03
+
+        collision_object_eb.id = "elastic_band";
+        geometry_msgs::Pose eb_pose;
+        eb_pose.orientation.w = 1.0;
+        eb_pose.position.y = 0;
+        eb_pose.position.x = 0.37 + obs_pos_x_bias;
+        eb_pose.position.z = pin1_z;
+        // box_pose.position.z = 0.4 - primitive.dimensions[primitive.BOX_Z]/2;
+
+        collision_object_eb.primitives.push_back(primitive_band);
+        collision_object_eb.primitive_poses.push_back(eb_pose);
+        collision_object_eb.operation = collision_object_eb.ADD;
+
+        std::vector<moveit_msgs::CollisionObject> collision_objects_eb;
+        collision_objects_eb.push_back(collision_object_eb);
+        // planning_scene_interface.addCollisionObjects(collision_objects_eb);
+        auto collision_objects_all = collision_objects;
+        collision_objects_all.push_back(collision_object_eb);
+        planning_scene_interface.addCollisionObjects(collision_objects_all);
+
+        // set to ignore the collision between some links and the band
+        planning_scene_diff_client.waitForExistence();
+        moveit_msgs::PlanningScene planning_scene_msg2; 
+        collision_detection::AllowedCollisionMatrix& acm2 = planning_scene_monitor->getPlanningScene()->getAllowedCollisionMatrixNonConst();
+        acm2.setEntry("panda_link0", "elastic_band", true);
+        acm2.setEntry("panda_link1", "elastic_band", true);
+        acm2.setEntry("panda_link2", "elastic_band", true);
+        acm2.setEntry("panda_link3", "elastic_band", true);
+        acm2.setEntry("panda_link4", "elastic_band", true);
+        acm2.setEntry("panda_link5", "elastic_band", true);
+        // acm.setEntry("panda_link6", "box1", true);
+
+        acm2.getMessage(planning_scene_msg2.allowed_collision_matrix);
+        planning_scene_msg2.world.collision_objects = collision_objects_all;
+        planning_scene_msg2.is_diff = true;
+        moveit_msgs::ApplyPlanningScene srv2;
+        srv2.request.scene = planning_scene_msg2;
+        planning_scene_diff_client.call(srv2);
+      }
+
+
       // robot_state = planning_scene_monitor::LockedPlanningSceneRO(planning_scene_monitor)->getCurrentStateUpdated(response.trajectory_start);
       moveit::core::RobotStatePtr robot_state(
           new moveit::core::RobotState(planning_scene_monitor::LockedPlanningSceneRO(planning_scene_monitor)->getCurrentState()));
@@ -550,6 +628,7 @@ int main(int argc, char** argv)
       req.group_name = "panda_arm";
       req.goal_constraints.push_back(joint_goal);
       current_state_index = 2;
+      
     }else if(current_state_index == 0){
       moveit::core::RobotStatePtr robot_state(
           new moveit::core::RobotState(planning_scene_monitor::LockedPlanningSceneRO(planning_scene_monitor)->getCurrentState()));
@@ -612,6 +691,14 @@ int main(int argc, char** argv)
       my_plan.start_state_ = response.trajectory_start;
       my_plan.planning_time_ = 10;
       move_group_interface.execute(my_plan);
+
+      // remove current belief of the band, we will add it before planning
+      if(current_state_index == 0 && pin1_z!=0){
+        std::vector<std::string> to_removed_list;
+        std::string to_removed_object = "elastic_band";
+        to_removed_list.push_back(to_removed_object);
+        planning_scene_interface.removeCollisionObjects(to_removed_list);
+      }
     }
     // // move_group_interface.move();
 

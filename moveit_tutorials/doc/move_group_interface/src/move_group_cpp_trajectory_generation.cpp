@@ -253,7 +253,7 @@ int main(int argc, char** argv)
   // ^^^^^^^^^^^^^^^^^^^^^^^^^
   // visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to start the demo");
 
-  double obs_pos_x_bias = 0.15;
+  double obs_pos_x_bias = 0.13;
   moveit_msgs::CollisionObject collision_object;
   collision_object.header.frame_id = move_group_interface.getPlanningFrame();
     // add second obstacle for cabinet
@@ -272,7 +272,7 @@ int main(int argc, char** argv)
   geometry_msgs::Pose box_pose;
   box_pose.orientation.w = 1.0;
   box_pose.position.x = 0.5 + obs_pos_x_bias;
-  box_pose.position.y = 0.3;
+  box_pose.position.y = 0.29;
   box_pose.position.z = 0.36;
 
   collision_object.primitives.push_back(primitive);
@@ -289,7 +289,7 @@ int main(int argc, char** argv)
   // geometry_msgs::Pose box_pose;
   box_pose.orientation.w = 1.0;
   box_pose.position.x = 0.5 + obs_pos_x_bias;
-  box_pose.position.y = -0.3;
+  box_pose.position.y = -0.29;
   box_pose.position.z = 0.36;
 
   collision_object.primitives.push_back(primitive);
@@ -323,7 +323,7 @@ int main(int argc, char** argv)
   // The id of the object is used to identify it.
   primitive.type = primitive.BOX;
   primitive.dimensions.resize(3);
-  primitive.dimensions[primitive.BOX_Y] = 0.6;
+  primitive.dimensions[primitive.BOX_Y] = 0.58;
   primitive.dimensions[primitive.BOX_X] = 0.3;
   primitive.dimensions[primitive.BOX_Z] = 0.03;
 

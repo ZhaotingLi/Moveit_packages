@@ -187,8 +187,8 @@ int main(int argc, char** argv)
   planner_config.name = "my_planner";
   planner_config.group = PLANNING_GROUP;
   planner_config.config["type"] = planner_id;
-  planner_config.config["pin1_x"] = "0";
-  planner_config.config["pin1_z"] = "0";
+  planner_config.config["pin1_x"] = "0.5";
+  planner_config.config["pin1_z"] = "0.4";
   planner_configs[PLANNING_GROUP] = planner_config;
   planning_pipeline->getPlannerManager()->setPlannerConfigurations(planner_configs);
 
@@ -643,6 +643,7 @@ int main(int argc, char** argv)
       current_state_index = 2;
     }
 
+    req.allowed_planning_time = 10.0;
     // planning_pipeline->generatePlan(planning_scene, req, res); // [IMPORTANT]this line is wrong, the planning_scene is not updated
     planning_pipeline->generatePlan(planning_scene_monitor->getPlanningScene(), req, res);
     /* Check that the planning was successful */

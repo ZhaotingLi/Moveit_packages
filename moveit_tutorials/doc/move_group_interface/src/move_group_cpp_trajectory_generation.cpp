@@ -106,12 +106,17 @@ bool finished = false; // whether the task is finished
 int current_state_index = 1; // 1: reach into the goal   0: return to the start   2: waiting
 double pin1_x = 0;
 double pin1_z = 0;
+std::vector<double> optimized_joint_goal;
 
 void contact_status_callback(const contact_msgs::contact_loop_status& msg){
   finished = msg.is_finished;
   current_state_index = msg.current_state_index;
   pin1_x = msg.pin1_x;
   pin1_z = msg.pin1_z;
+  optimized_joint_goal.clear();
+  for(int i = 0; i < 7; i++){
+    optimized_joint_goal.push_back(msg.optimized_q_goal[i]);
+  }
 }
 
 int main(int argc, char** argv)
@@ -187,8 +192,10 @@ int main(int argc, char** argv)
   planner_config.name = "my_planner";
   planner_config.group = PLANNING_GROUP;
   planner_config.config["type"] = planner_id;
-  planner_config.config["pin1_x"] = "0.5";
-  planner_config.config["pin1_z"] = "0.4";
+  // planner_config.config["pin1_x"] = "0.5";
+  // planner_config.config["pin1_z"] = "0.4";
+  planner_config.config["pin1_x"] = "0.0";
+  planner_config.config["pin1_z"] = "0.0";
   planner_configs[PLANNING_GROUP] = planner_config;
   planning_pipeline->getPlannerManager()->setPlannerConfigurations(planner_configs);
 
@@ -259,14 +266,14 @@ int main(int argc, char** argv)
   primitive.dimensions.resize(3);
   primitive.dimensions[primitive.BOX_Y] = 0.02;
   primitive.dimensions[primitive.BOX_X] = 0.3;
-  primitive.dimensions[primitive.BOX_Z] = 0.8;
+  primitive.dimensions[primitive.BOX_Z] = 0.72;
 
   // Define a pose for the box (specified relative to frame_id)
   geometry_msgs::Pose box_pose;
   box_pose.orientation.w = 1.0;
   box_pose.position.x = 0.5 + obs_pos_x_bias;
   box_pose.position.y = 0.3;
-  box_pose.position.z = 0.4;
+  box_pose.position.z = 0.36;
 
   collision_object.primitives.push_back(primitive);
   collision_object.primitive_poses.push_back(box_pose);
@@ -283,7 +290,7 @@ int main(int argc, char** argv)
   box_pose.orientation.w = 1.0;
   box_pose.position.x = 0.5 + obs_pos_x_bias;
   box_pose.position.y = -0.3;
-  box_pose.position.z = 0.4;
+  box_pose.position.z = 0.36;
 
   collision_object.primitives.push_back(primitive);
   collision_object.primitive_poses.push_back(box_pose);
@@ -294,23 +301,23 @@ int main(int argc, char** argv)
 
   // // add third "elastic band"
   // // The id of the object is used to identify it.
-  primitive.type = primitive.BOX;
-  primitive.dimensions.resize(3);
-  primitive.dimensions[primitive.BOX_Y] = 0.6;
-  primitive.dimensions[primitive.BOX_X] = 0.01;
-  primitive.dimensions[primitive.BOX_Z] = 0.03;   // 0.03
+  // primitive.type = primitive.BOX;
+  // primitive.dimensions.resize(3);
+  // primitive.dimensions[primitive.BOX_Y] = 0.6;
+  // primitive.dimensions[primitive.BOX_X] = 0.01;
+  // primitive.dimensions[primitive.BOX_Z] = 0.03;   // 0.03
 
-  collision_object.id = "box1";
-  box_pose.orientation.w = 1.0;
-  box_pose.position.y = 0;
-  box_pose.position.x = 0.35 + obs_pos_x_bias;
-  box_pose.position.z = 0.45 - primitive.dimensions[primitive.BOX_Z]/2;
-  // box_pose.position.z = 0.4 - primitive.dimensions[primitive.BOX_Z]/2;
+  // collision_object.id = "box1";
+  // box_pose.orientation.w = 1.0;
+  // box_pose.position.y = 0;
+  // box_pose.position.x = 0.35 + obs_pos_x_bias;
+  // box_pose.position.z = 0.45 - primitive.dimensions[primitive.BOX_Z]/2;
+  // // box_pose.position.z = 0.4 - primitive.dimensions[primitive.BOX_Z]/2;
 
-  collision_object.primitives.push_back(primitive);
-  collision_object.primitive_poses.push_back(box_pose);
-  collision_object.operation = collision_object.ADD;
-  collision_objects.push_back(collision_object);
+  // collision_object.primitives.push_back(primitive);
+  // collision_object.primitive_poses.push_back(box_pose);
+  // collision_object.operation = collision_object.ADD;
+  // collision_objects.push_back(collision_object);
 
     // add 4th-- upper borad of the cabinet 
   // The id of the object is used to identify it.
@@ -326,7 +333,7 @@ int main(int argc, char** argv)
   box_pose.orientation.w = 1.0;
   box_pose.position.y = 0;
   box_pose.position.x = 0.5 + obs_pos_x_bias;
-  box_pose.position.z = 0.77;
+  box_pose.position.z = 0.72;
 
   collision_object.primitives.push_back(primitive);
   collision_object.primitive_poses.push_back(box_pose);
@@ -364,7 +371,7 @@ int main(int argc, char** argv)
   primitive.dimensions.resize(3);
   primitive.dimensions[primitive.BOX_Y] = 0.6;
   primitive.dimensions[primitive.BOX_X] = 0.02;
-  primitive.dimensions[primitive.BOX_Z] = 0.8;
+  primitive.dimensions[primitive.BOX_Z] = 0.72;
 
   collision_object.id = "box1";
   // Define a pose for the box (specified relative to frame_id)
@@ -372,7 +379,7 @@ int main(int argc, char** argv)
   box_pose.orientation.w = 1.0;
   box_pose.position.y = 0;
   box_pose.position.x = 0.65 + obs_pos_x_bias;
-  box_pose.position.z = 0.4;
+  box_pose.position.z = 0.36;
 
   collision_object.primitives.push_back(primitive);
   collision_object.primitive_poses.push_back(box_pose);
@@ -394,22 +401,22 @@ int main(int argc, char** argv)
   planning_scene_diff_client.waitForExistence();
   // and send the diffs to the planning scene via a service call
 
-  moveit_msgs::PlanningScene planning_scene_msg; 
-  collision_detection::AllowedCollisionMatrix& acm = planning_scene_monitor->getPlanningScene()->getAllowedCollisionMatrixNonConst();
-  acm.setEntry("panda_link0", "box1", true);
-  acm.setEntry("panda_link1", "box1", true);
-  acm.setEntry("panda_link2", "box1", true);
-  acm.setEntry("panda_link3", "box1", true);
-  acm.setEntry("panda_link4", "box1", true);
-  acm.setEntry("panda_link5", "box1", true);
-  // acm.setEntry("panda_link6", "box1", true);
+  // moveit_msgs::PlanningScene planning_scene_msg; 
+  // collision_detection::AllowedCollisionMatrix& acm = planning_scene_monitor->getPlanningScene()->getAllowedCollisionMatrixNonConst();
+  // acm.setEntry("panda_link0", "box1", true);
+  // acm.setEntry("panda_link1", "box1", true);
+  // acm.setEntry("panda_link2", "box1", true);
+  // acm.setEntry("panda_link3", "box1", true);
+  // acm.setEntry("panda_link4", "box1", true);
+  // acm.setEntry("panda_link5", "box1", true);
+  // // acm.setEntry("panda_link6", "box1", true);
 
-  acm.getMessage(planning_scene_msg.allowed_collision_matrix);
-  planning_scene_msg.world.collision_objects = collision_objects;
-  planning_scene_msg.is_diff = true;
-  moveit_msgs::ApplyPlanningScene srv;
-  srv.request.scene = planning_scene_msg;
-  planning_scene_diff_client.call(srv);
+  // acm.getMessage(planning_scene_msg.allowed_collision_matrix);
+  // planning_scene_msg.world.collision_objects = collision_objects;
+  // planning_scene_msg.is_diff = true;
+  // moveit_msgs::ApplyPlanningScene srv;
+  // srv.request.scene = planning_scene_msg;
+  // planning_scene_diff_client.call(srv);
 
   
 
@@ -621,7 +628,11 @@ int main(int argc, char** argv)
           new moveit::core::RobotState(planning_scene_monitor::LockedPlanningSceneRO(planning_scene_monitor)->getCurrentState()));
       moveit::core::robotStateToRobotStateMsg(*robot_state, req.start_state);
       moveit::core::RobotState goal_state(*robot_state);
-      goal_state.setJointGroupPositions(joint_model_group, joint_group_positions);
+      if(optimized_joint_goal.size() != 7){
+        goal_state.setJointGroupPositions(joint_model_group, joint_group_positions);
+      }else{
+        goal_state.setJointGroupPositions(joint_model_group, optimized_joint_goal);
+      }
       moveit_msgs::Constraints joint_goal = kinematic_constraints::constructGoalConstraints(goal_state, joint_model_group);
 
       req.goal_constraints.clear();
@@ -641,6 +652,9 @@ int main(int argc, char** argv)
       req.group_name = "panda_arm";
       req.goal_constraints.push_back(joint_goal);
       current_state_index = 2;
+    }else if(current_state_index == 2){
+      success = false;
+      continue;
     }
 
     req.allowed_planning_time = 10.0;
@@ -650,7 +664,8 @@ int main(int argc, char** argv)
     if (res.error_code_.val != res.error_code_.SUCCESS)
     {
       ROS_ERROR("Could not compute plan successfully");
-      return 0;
+      // return 0;
+      success = false;
     }else{
       success = true;
     }

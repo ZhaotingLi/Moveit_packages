@@ -26,8 +26,8 @@ find_package(PythonLibs REQUIRED) # matplotlibcpp needs this
 include_directories(${PYTHON_INCLUDE_DIRS})
 
 # find_package(catkin REQUIRED COMPONENTS contact_detection)
-set(CONTACT_DETECTION_PATH "/home/lzt/catkin_crl/src/franka_ros/contact_detection")
-#set(CONTACT_DETECTION_PATH "/home/panda/catkin_crl/src/franka_ros/contact_detection")
+# set(CONTACT_DETECTION_PATH "/home/lzt/catkin_crl/src/franka_ros/contact_detection")
+set(CONTACT_DETECTION_PATH "/home/panda/catkin_crl/src/franka_ros/contact_detection")
 
 include_directories(${CONTACT_DETECTION_PATH}/include)
 link_directories(${catkin_INCLUDE_DIRS})

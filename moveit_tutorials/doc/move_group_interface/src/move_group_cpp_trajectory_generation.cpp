@@ -396,6 +396,7 @@ int main(int argc, char** argv)
 
   bool success = false;  // whether a single plan finds a feasible trajectory solution
 
+  /*  Core function of this file: plan a path according to current status  */
   // need to update via other ros nodes: (1) the joint goal positions (2) planner interal parameter (pins state) (3) current state (4) the position of the elastic band (ready to be removed if not accurate)
   while(!finished){
     /*[Begin] Method 01 use move group interface, planner is executed in the move_group node launched by demo/real robot*/

@@ -12,11 +12,14 @@ This moveit package is built from the original moveit package, with three main m
 
 1. Follow the instruction here: https://moveit.ros.org/install/source/  (Note that use the code of this package, intead of the official moveit source code.)
 
-2. Blacklist: catkin config --blacklist     moveit_commander     moveit_setup_assistant     moveit_ros_robot_interaction     moveit_ros_visualization     moveit_ros_benchmarks     moveit_controller_manager_example  
+2. You should first change the path defined in the `moveit/moveit_planners/ompl/ompl_interface/CMakeLists.txt`:
+set the `CONTACT_DETECTION_PATH` to the path of the contact_detection package.
 
-3. One curl error can be solved by https://github.com/ros-planning/moveit/issues/697 However, remember to delete the build and devel files before rebuild. 
+3. Blacklist: catkin config --blacklist     moveit_commander     moveit_setup_assistant     moveit_ros_robot_interaction     moveit_ros_visualization     moveit_ros_benchmarks     moveit_controller_manager_example  
 
-4. Run the rviz launch demo, there may be a bug to load the motion planning visualization: [ERROR] [1671728392.408823536]: PluginlibFactory: The plugin for class 'moveit_rviz_plugin/MotionPlanning' failed to load. Can be solved by install sudo apt-get install ros-noetic-moveit-ros-visualization  https://blog.csdn.net/u011304078/article/details/102723477  
+4. One curl error can be solved by https://github.com/ros-planning/moveit/issues/697 However, remember to delete the build and devel files before rebuild. 
+
+5. Run the rviz launch demo, there may be a bug to load the motion planning visualization: [ERROR] [1671728392.408823536]: PluginlibFactory: The plugin for class 'moveit_rviz_plugin/MotionPlanning' failed to load. Can be solved by install sudo apt-get install ros-noetic-moveit-ros-visualization  https://blog.csdn.net/u011304078/article/details/102723477  
 
 
 ## Usage in simulation

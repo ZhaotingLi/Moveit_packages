@@ -24,7 +24,6 @@ This moveit package is built from the original moveit package, with three main m
 Start the robot
 ```
 roslaunch panda_moveit_config demo_gazebo.launch
-
 ```
 
 Then plan a path by running

@@ -64,50 +64,22 @@
 
 #include "contact_msgs/contact_loop_status.h"
 
-// The circle constant tau = 2*pi. One tau is one rotation in radians.
-const double tau = 2 * M_PI;
-
-// to be modified, this should also be included in the low level control part
-// to do: add a .h file and a class to store the obstacles info
-Eigen::Vector3d ext_force;
-Eigen::Vector3d contact_position;
-bool is_contact_happening = false;
-bool is_previous_contact_happening = false;
-bool is_contact_saved = false;
-
-// need to check whether the obstacle has already in this set before saving the new one
-std::vector<Eigen::Vector3d> obstacle_set;  // contain the estimated center of detected obstacles 
-
-
-void callback(const geometry_msgs::Wrench& msg){
-  ext_force << msg.force.x, msg.force.y, msg.force.z;
-  contact_position << msg.torque.x, msg.torque.y, msg.torque.z;
-  is_previous_contact_happening = is_contact_happening;
-  if(ext_force.norm() > 2){
-    is_contact_happening = true;
-  }else{
-    is_contact_happening = false;
-  }
-  if(ext_force.norm() > 10){
-    if(!is_contact_saved){
-      obstacle_set.push_back(contact_position);
-      is_contact_saved = true;
-    }
-    // also publish to the topic "effort_joint_trajectory_controller/command" to stop current plan excuation, can be done in another node
-  }
-
-  // contact just happen
-  if(!is_previous_contact_happening && is_contact_happening){
-    is_contact_saved = false;
-  }
-}
-
+// parameters for the current status of the state machine
 bool finished = false; // whether the task is finished
 int current_state_index = 1; // 1: reach into the goal   0: return to the start   2: waiting
-double pin1_x = 0;
-double pin1_z = 0;
+
+// parameters of the elastic band
+// double pin1_x = 0;     // should set to zero during the whole loop test
+// double pin1_z = 0;
+double pin1_x = 0.5;      // in the case where only planning is tested
+double pin1_z = 0.38;
+
+// valude of the optimized joint goal, which is published by the contact_detection_node_simplifiedModel node
 std::vector<double> optimized_joint_goal;
 
+/**
+ * @brief Callback function for the contact status
+ */
 void contact_status_callback(const contact_msgs::contact_loop_status& msg){
   finished = msg.is_finished;
   current_state_index = msg.current_state_index;
@@ -133,28 +105,15 @@ int main(int argc, char** argv)
   ros::AsyncSpinner spinner(1);
   spinner.start();
 
-  // BEGIN_TUTORIAL
-  //
-  // Setup
-  // ^^^^^
-  //
-  // MoveIt operates on sets of joints called "planning groups" and stores them in an object called
-  // the `JointModelGroup`. Throughout MoveIt the terms "planning group" and "joint model group"
-  // are used interchangeably.
-  static const std::string PLANNING_GROUP = "panda_arm";
 
-  // The :planning_interface:`MoveGroupInterface` class can be easily
-  // setup using just the name of the planning group you would like to control and plan for.
+  static const std::string PLANNING_GROUP = "panda_arm";
   moveit::planning_interface::MoveGroupInterface move_group_interface(PLANNING_GROUP);
 
-  // We will use the :planning_interface:`PlanningSceneInterface`
-  // class to add and remove collision objects in our "virtual world" scene
+
   moveit::planning_interface::PlanningSceneInterface planning_scene_interface;
 
-  // Raw pointers are frequently used to refer to the planning group for improved performance.
   const moveit::core::JointModelGroup* joint_model_group =
       move_group_interface.getCurrentState()->getJointModelGroup(PLANNING_GROUP);
-
 
   planning_scene_monitor::PlanningSceneMonitorPtr planning_scene_monitor;
   planning_scene_monitor = std::make_shared<planning_scene_monitor::PlanningSceneMonitor>("robot_description");
@@ -215,16 +174,11 @@ int main(int argc, char** argv)
   }
 
   // Visualization
-  // ^^^^^^^^^^^^^
-  //
-  // The package MoveItVisualTools provides many capabilities for visualizing objects, robots,
-  // and trajectories in RViz as well as debugging tools such as step-by-step introspection of a script.
   namespace rvt = rviz_visual_tools;
   moveit_visual_tools::MoveItVisualTools visual_tools("panda_link0");
   visual_tools.deleteAllMarkers();
 
-  // Remote control is an introspection tool that allows users to step through a high level script
-  // via buttons and keyboard shortcuts in RViz
+  // Remote control is an introspection tool that allows users to step through a high level script via buttons and keyboard shortcuts in RViz
   visual_tools.loadRemoteControl();
 
   // RViz provides many types of markers, in this demo we will use text, cylinders, and spheres
@@ -232,27 +186,7 @@ int main(int argc, char** argv)
   text_pose.translation().z() = 1.0;
   visual_tools.publishText(text_pose, "MoveGroupInterface Demo", rvt::WHITE, rvt::XLARGE);
 
-  // Batch publishing is used to reduce the number of messages being sent to RViz for large visualizations
-  // visual_tools.trigger();
-
-  // Getting Basic Information
-  // ^^^^^^^^^^^^^^^^^^^^^^^^^
-  //
-  // We can print the name of the reference frame for this robot.
-  ROS_INFO_NAMED("tutorial", "Planning frame: %s", move_group_interface.getPlanningFrame().c_str());
-
-  // We can also print the name of the end-effector link for this group.
-  ROS_INFO_NAMED("tutorial", "End effector link: %s", move_group_interface.getEndEffectorLink().c_str());
-
-  // We can get a list of all the groups in the robot:
-  ROS_INFO_NAMED("tutorial", "Available Planning Groups:");
-  std::copy(move_group_interface.getJointModelGroupNames().begin(),
-            move_group_interface.getJointModelGroupNames().end(), std::ostream_iterator<std::string>(std::cout, ", "));
-
-  // Start the demo
-  // ^^^^^^^^^^^^^^^^^^^^^^^^^
-  // visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to start the demo");
-
+  /* -------------------- add obstalces [Begin]-------------------------------------------------------------------*/
   double obs_pos_x_bias = 0.13;
   moveit_msgs::CollisionObject collision_object;
   collision_object.header.frame_id = move_group_interface.getPlanningFrame();
@@ -401,6 +335,8 @@ int main(int argc, char** argv)
   planning_scene_diff_client.waitForExistence();
   // and send the diffs to the planning scene via a service call
 
+  /* -------------------- add obstalces [end]-------------------------------------------------------------------*/
+
   // moveit_msgs::PlanningScene planning_scene_msg; 
   // collision_detection::AllowedCollisionMatrix& acm = planning_scene_monitor->getPlanningScene()->getAllowedCollisionMatrixNonConst();
   // acm.setEntry("panda_link0", "box1", true);
@@ -433,103 +369,27 @@ int main(int argc, char** argv)
   current_state->copyJointGroupPositions(joint_model_group, joint_group_positions);
   current_state->copyJointGroupPositions(joint_model_group, joint_start_state);
 
-  // Now, let's modify one of the joints, plan to the new joint space goal and visualize the plan.
-  // joint_group_positions[0] = -48 * 3.1415926 / 180;
-  // joint_group_positions[1] = -17 * 3.1415926/180;
-  // joint_group_positions[2] =  34 * 3.1415926/180;
-  // joint_group_positions[3] =  -126 * 3.1415926/180;
-  // joint_group_positions[4] =  10 * 3.1415926 / 180;
-  // joint_group_positions[5] =  110 * 3.1415926/180;
-  // joint_group_positions[6] =  26 *3.1415926/180;
-  // joint_group_positions[0] = 16 * 3.1415926 / 180;
-  // joint_group_positions[1] = 25 * 3.1415926/180;
-  // joint_group_positions[2] =  -25 * 3.1415926/180;
-  // joint_group_positions[3] =  -106 * 3.1415926/180;
-  // joint_group_positions[4] =  13 * 3.1415926 / 180;
-  // joint_group_positions[5] =  204 * 3.1415926/180;
-  // joint_group_positions[6] =  39 *3.1415926/180;
-  
-  // reach into the cabinet and collide with the top board
-  // joint_group_positions[0] = -87 * 3.1415926 / 180;
-  // joint_group_positions[1] = -2 * 3.1415926/180;
-  // joint_group_positions[2] =  11 * 3.1415926/180;
-  // joint_group_positions[3] =  -107 * 3.1415926/180;
-  // joint_group_positions[4] =  0 * 3.1415926 / 180;
-  // joint_group_positions[5] =  106 * 3.1415926/180;
-  // joint_group_positions[6] =  59 *3.1415926/180;
-
-  // Motion 1: reach  and collide into the top and left board of the cabient
-  // joint_group_positions[0] = -78 * 3.1415926 / 180;
-  // joint_group_positions[1] = 38 * 3.1415926/180;
-  // joint_group_positions[2] =  10 * 3.1415926/180;
-  // joint_group_positions[3] =  -92 * 3.1415926/180;
-  // joint_group_positions[4] =  -8 * 3.1415926 / 180;
-  // joint_group_positions[5] =  129 * 3.1415926/180;
-  // joint_group_positions[6] =  70 *3.1415926/180;
-
-  //Motion2 [Not good]: reach  and collide into the left board of the cabient, but also collide into the back board, 
-  // joint_group_positions[0] = -74 * 3.1415926 / 180;
-  // joint_group_positions[1] = 36 * 3.1415926/180;
-  // joint_group_positions[2] =  6 * 3.1415926/180;
-  // joint_group_positions[3] =  -93 * 3.1415926/180;
-  // joint_group_positions[4] =  -10 * 3.1415926 / 180;
-  // joint_group_positions[5] =  123 * 3.1415926/180;
-  // joint_group_positions[6] =  -13 *3.1415926/180;
-
-  // MOtion 3 [Good traj]: env: cabinet_crl, reach and collide into the left board of the cabient, tested for rigid contact qp solver 
-  // joint_group_positions[0] = -74 * 3.1415926 / 180;
-  // joint_group_positions[1] = 36 * 3.1415926/180;
-  // joint_group_positions[2] =  6 * 3.1415926/180;
-  // joint_group_positions[3] =  -93 * 3.1415926/180;
-  // joint_group_positions[4] =  -10 * 3.1415926 / 180;
-  // joint_group_positions[5] =  123 * 3.1415926/180;
-  // joint_group_positions[6] =  -13 *3.1415926/180;
-
-  // // Motion 4: env: cabinet_crl2
-  // joint_group_positions[0] = -93 * 3.1415926 / 180;
-  // joint_group_positions[1] = 50 * 3.1415926/180;
+  // joint goal postion if the optimized_goal_q is not available
+  // standard joint state without optimization
+  // joint_group_positions[0] = 0 * 3.1415926 / 180;
+  // joint_group_positions[1] = 52 * 3.1415926/180;
   // joint_group_positions[2] =  0 * 3.1415926/180;
-  // joint_group_positions[3] =  -85 * 3.1415926/180;
-  // joint_group_positions[4] =  0 * 3.1415926 / 180;
-  // joint_group_positions[5] =  135 * 3.1415926/180;
-  // joint_group_positions[6] =  41 *3.1415926/180;
-
-  // Motion 5: env: cabinet_crl2, end effecotr a little bit lower along z axis than Motion 4
-  // joint_group_positions[0] = -92 * 3.1415926 / 180;
-  // joint_group_positions[1] = 54 * 3.1415926/180;
-  // joint_group_positions[2] =  0 * 3.1415926/180;
-  // joint_group_positions[3] =  -84 * 3.1415926/180;
+  // joint_group_positions[3] =  -90 * 3.1415926/180;
   // joint_group_positions[4] =  0 * 3.1415926 / 180;
   // joint_group_positions[5] =  137 * 3.1415926/180;
-  // joint_group_positions[6] =  42 *3.1415926/180;
-
-  // // Motion 6: env: cabinet_crl2, end effecotr a little bit lower along z axis than Motion 5
-  joint_group_positions[0] = 0 * 3.1415926 / 180;
-  joint_group_positions[1] = 52 * 3.1415926/180;
-  joint_group_positions[2] =  0 * 3.1415926/180;
-  joint_group_positions[3] =  -90 * 3.1415926/180;
-  joint_group_positions[4] =  0 * 3.1415926 / 180;
-  joint_group_positions[5] =  137 * 3.1415926/180;
-  joint_group_positions[6] =  44 *3.1415926/180;
-
-  // Motion 6.2: env: cabinet_crl2, self motion of Motion 6
-  // joint_group_positions[0] = 0 * 3.1415926 / 180;
-  // joint_group_positions[1] = 46 * 3.1415926/180;
-  // joint_group_positions[2] =  0 * 3.1415926/180;
-  // joint_group_positions[3] =  -109 * 3.1415926/180;
-  // joint_group_positions[4] =  0 * 3.1415926 / 180;
-  // joint_group_positions[5] =  167 * 3.1415926/180;
   // joint_group_positions[6] =  44 *3.1415926/180;
 
 
-  // moition 7: avoid the elastic band when reaching into the cabinet
-  // joint_group_positions[0] = 0 * 3.1415926 / 180;
-  // joint_group_positions[1] = -15 * 3.1415926/180;
-  // joint_group_positions[2] =  0 * 3.1415926/180;
-  // joint_group_positions[3] =  -130 * 3.1415926/180;
-  // joint_group_positions[4] =  0 * 3.1415926 / 180;
-  // joint_group_positions[5] =  168 * 3.1415926/180;
-  // joint_group_positions[6] =  45 *3.1415926/180;
+  // optimized joint state in mode 1
+  // -0.08979270079669528, 0.8643770043246566, 0.08706532937078018, -1.7446617106558027, -0.14915937795513548, 2.764733060796357, 0.8636804622796009
+  joint_group_positions[0] = -0.08979270079669528;
+  joint_group_positions[1] = 0.8643770043246566;
+  joint_group_positions[2] =  0.08706532937078018;
+  joint_group_positions[3] =  -1.7446617106558027;
+  joint_group_positions[4] =  -0.14915937795513548;
+  joint_group_positions[5] =  2.764733060796357;
+  joint_group_positions[6] =  0.8636804622796009;
+
 
   moveit::core::RobotStatePtr robot_state_start(
     new moveit::core::RobotState(planning_scene_monitor::LockedPlanningSceneRO(planning_scene_monitor)->getCurrentState()));
@@ -556,8 +416,8 @@ int main(int argc, char** argv)
     /*[Begin] Method02 use planning pipeline, planner is executed in this node, so we can modify the planner config in real time*/
     planning_interface::MotionPlanRequest req;
     planning_interface::MotionPlanResponse res; 
-    if(current_state_index == 1){
-      if(pin1_z!= 0){
+    if(current_state_index == 1){  // if the current state is 1, then we need to plan to the goal
+      if(pin1_z!= 0){   // if the pin1_z is not zero, then we need to put the elastic band into the planning process
         std::cout<<"put the elastic band into planning process"<<std::endl;
         // update the pins state for ompl planner
         planner_configs =
@@ -640,7 +500,7 @@ int main(int argc, char** argv)
       req.goal_constraints.push_back(joint_goal);
       current_state_index = 2;
       
-    }else if(current_state_index == 0){
+    }else if(current_state_index == 0){  // if the current state is 0, then we need to plan to the start
       moveit::core::RobotStatePtr robot_state(
           new moveit::core::RobotState(planning_scene_monitor::LockedPlanningSceneRO(planning_scene_monitor)->getCurrentState()));
       moveit::core::robotStateToRobotStateMsg(*robot_state, req.start_state);
@@ -708,6 +568,7 @@ int main(int argc, char** argv)
       my_plan.start_state_ = response.trajectory_start;
       my_plan.planning_time_ = 10;
       move_group_interface.execute(my_plan);
+      move_group_interface.move();
 
       // remove current belief of the band, we will add it before planning
       if(current_state_index == 0 && pin1_z!=0){
@@ -725,118 +586,6 @@ int main(int argc, char** argv)
   // ros::WallDuration(3.0).sleep();
 
 
-  // (5) add obstacles
-  // Now let's define a collision object ROS message for the robot to avoid.
-  // moveit_msgs::CollisionObject collision_object;
-  // std::cout<<"size of saved obstacles: " << obstacle_set.size() << std::endl;
-  // // The id of the object is used to identify it.
-  // collision_object.id = "box1";
-
-  // // Define a box to add to the world.
-  // // shape_msgs::SolidPrimitive primitive;
-  // primitive.type = primitive.BOX;
-  // primitive.dimensions.resize(3);
-  // primitive.dimensions[primitive.BOX_X] = 0.02;
-  // primitive.dimensions[primitive.BOX_Y] = 0.1;
-  // primitive.dimensions[primitive.BOX_Z] = 0.02;
-
-  // if(obstacle_set.size() > 0){
-  //   box_pose.orientation.w = 1.0;
-  //   box_pose.position.x = obstacle_set[0][0] + primitive.dimensions[primitive.BOX_X] + 0.01;
-  //   box_pose.position.y = obstacle_set[0][1];
-  //   box_pose.position.z = obstacle_set[0][2] +  primitive.dimensions[primitive.BOX_Z]/2;
-  // }else{
-  //   box_pose.orientation.w = 1.0;
-  //   box_pose.position.x = 0.4;
-  //   box_pose.position.y = 0.0;
-  //   box_pose.position.z = 0.75;
-  // }
-
-
-  // collision_object.primitives.push_back(primitive);
-  // collision_object.primitive_poses.push_back(box_pose);
-  // collision_object.operation = collision_object.ADD;
-
-  // std::vector<moveit_msgs::CollisionObject> collision_objects_estiamted;
-  // collision_objects_estiamted.push_back(collision_object);
-  // ROS_INFO_NAMED("tutorial", "Add an object into the world");
-  // planning_scene_interface.addCollisionObjects(collision_objects_estiamted);
-
-  // // remove obstacles example
-  // // Now, let's remove the objects from the world.
-  // // ROS_INFO_NAMED("tutorial", "Remove the objects from the world");
-  // // std::vector<std::string> object_ids;
-  // // object_ids.push_back(collision_object.id);
-  // // object_ids.push_back(object_to_attach.id);
-  // // planning_scene_interface.removeCollisionObjects(object_ids);
-
-  // // Show text in RViz of status and wait for MoveGroup to receive and process the collision object message
-  // visual_tools.publishText(text_pose, "Add object", rvt::WHITE, rvt::XLARGE);
-  // // visual_tools.trigger();
-  // // visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to once the collision object appears in RViz");
-  // ROS_INFO_NAMED("tutorial", "Plan the path");
-  // ros::WallDuration(1.0).sleep();
-
-  // (6) Plan a trajectory to avoid the obstacles
-  // .. _move_group_interface-planning-to-pose-goal:
-  //
-  // Planning to a Pose goal
-  // ^^^^^^^^^^^^^^^^^^^^^^^
-  // We can plan a motion for this group to a desired pose for the
-  // end-effector.
-  // Important! read the current state and send it to moveit. otherwise there will be the error Invalid Trajectory: start point deviates from current robot state more than 0.01 joint 'panda_joint2': expected: -0.569261, current: -0.554642
-  // robot_state::RobotState current_state2(*move_group_interface.getCurrentState());
-  // move_group_interface.setStartState(current_state2);
-
-  // geometry_msgs::Pose target_pose1;
-  // target_pose1.orientation.x=-0.9238795;
-  // target_pose1.orientation.y = 0.3826834;
-  // target_pose1.position.x = 0.5;
-  // target_pose1.position.y = 0.0;
-  // target_pose1.position.z = 0.49;
-  // move_group_interface.setPoseTarget(target_pose1);
-
-  // // Now, we call the planner to compute the plan and visualize it.
-  // // Note that we are just planning, not asking move_group_interface
-  // // to actually move the robot.
-  // // moveit::planning_interface::MoveGroupInterface::Plan my_plan;
-  // move_group_interface.setMaxVelocityScalingFactor(0.075);
-  // move_group_interface.setMaxAccelerationScalingFactor(0.075);
-  // success = (move_group_interface.plan(my_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
-
-  // ROS_INFO_NAMED("tutorial", "Visualizing plan 1 (pose goal) %s", success ? "" : "FAILED");
-
-  // // Visualizing plans
-  // // ^^^^^^^^^^^^^^^^^
-  // // We can also visualize the plan as a line with markers in RViz.
-  // ROS_INFO_NAMED("tutorial", "Visualizing plan 1 as trajectory line");
-  // visual_tools.publishAxisLabeled(target_pose1, "pose1");
-  // visual_tools.publishText(text_pose, "Pose Goal", rvt::WHITE, rvt::XLARGE);
-  // visual_tools.publishTrajectoryLine(my_plan.trajectory_, joint_model_group);
-  // // visual_tools.trigger();
-  // // visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to execute the trajectory");
-  // ROS_INFO_NAMED("tutorial", "excuate the  final path");
-  // ros::WallDuration(6.0).sleep();
-
-
-  //(7) excuate the plan
-  // if(success){
-  //   move_group_interface.execute(my_plan);
-  // }
-  // move_group_interface.move();
-
-  // Moving to a pose goal
-  // ^^^^^^^^^^^^^^^^^^^^^
-  //
-  // If you do not want to inspect the planned trajectory,
-  // the following is a more robust combination of the two-step plan+execute pattern shown above
-  // and should be preferred. Note that the pose goal we had set earlier is still active,
-  // so the robot will try to move to that goal.
-
-  // move_group_interface.move();
-
-  
-  // END_TUTORIAL
 
   ros::shutdown();
   return 0;

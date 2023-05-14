@@ -9,7 +9,9 @@
   <!-- Launch the torque observer -->
   <arg name="arm_id" default="panda"/>
   <rosparam command="load" file="$(find franka_example_controllers)/config/franka_example_controllers.yaml" subst_value="true" />
+  <!--External torque observer-->
   <node name="tauObserver_controller_spawner" pkg="controller_manager" type="spawner" respawn="false" output="screen"  args="external_torque_observer joint_impedance_lowlevel_controller"/>
+  <!--Contact-aware controller-->
   <node name="contact_aware_controller_spawner" pkg="controller_manager" type="spawner" respawn="false" output="screen"  args="contact_aware_joint_trajectory_controller"/>
  
   <!-- By default use joint position controllers -->

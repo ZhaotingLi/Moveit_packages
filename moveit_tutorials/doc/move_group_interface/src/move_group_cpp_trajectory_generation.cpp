@@ -254,6 +254,7 @@ int main(int argc, char** argv)
   // visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to start the demo");
 
   double obs_pos_x_bias = 0.13;
+  double obs_pox_z_bias = 0.05; // the cabinet is higher than before after moving to the new workspace
   moveit_msgs::CollisionObject collision_object;
   collision_object.header.frame_id = move_group_interface.getPlanningFrame();
     // add second obstacle for cabinet
@@ -273,7 +274,7 @@ int main(int argc, char** argv)
   box_pose.orientation.w = 1.0;
   box_pose.position.x = 0.5 + obs_pos_x_bias;
   box_pose.position.y = 0.29;
-  box_pose.position.z = 0.36;
+  box_pose.position.z = 0.36 + obs_pox_z_bias;
 
   collision_object.primitives.push_back(primitive);
   collision_object.primitive_poses.push_back(box_pose);
@@ -290,7 +291,7 @@ int main(int argc, char** argv)
   box_pose.orientation.w = 1.0;
   box_pose.position.x = 0.5 + obs_pos_x_bias;
   box_pose.position.y = -0.29;
-  box_pose.position.z = 0.36;
+  box_pose.position.z = 0.36 + obs_pox_z_bias;
 
   collision_object.primitives.push_back(primitive);
   collision_object.primitive_poses.push_back(box_pose);
@@ -333,7 +334,7 @@ int main(int argc, char** argv)
   box_pose.orientation.w = 1.0;
   box_pose.position.y = 0;
   box_pose.position.x = 0.5 + obs_pos_x_bias;
-  box_pose.position.z = 0.72;
+  box_pose.position.z = 0.72 + obs_pox_z_bias;
 
   collision_object.primitives.push_back(primitive);
   collision_object.primitive_poses.push_back(box_pose);
@@ -347,7 +348,7 @@ int main(int argc, char** argv)
   primitive.type = primitive.BOX;
   primitive.dimensions.resize(3);
   primitive.dimensions[primitive.BOX_Y] = 1;
-  primitive.dimensions[primitive.BOX_X] = 1;
+  primitive.dimensions[primitive.BOX_X] = 0.8;
   primitive.dimensions[primitive.BOX_Z] = 0.01;
 
   collision_object.id = "box1";
@@ -356,7 +357,7 @@ int main(int argc, char** argv)
   box_pose.orientation.w = 1.0;
   box_pose.position.y = 0;
   box_pose.position.x = 0.5;
-  box_pose.position.z = -0.05;
+  box_pose.position.z = -0.03 ;
 
   collision_object.primitives.push_back(primitive);
   collision_object.primitive_poses.push_back(box_pose);
@@ -379,7 +380,7 @@ int main(int argc, char** argv)
   box_pose.orientation.w = 1.0;
   box_pose.position.y = 0;
   box_pose.position.x = 0.65 + obs_pos_x_bias;
-  box_pose.position.z = 0.36;
+  box_pose.position.z = 0.36 + obs_pox_z_bias;
 
   collision_object.primitives.push_back(primitive);
   collision_object.primitive_poses.push_back(box_pose);
@@ -486,16 +487,16 @@ int main(int argc, char** argv)
   // joint_group_positions[6] =  -13 *3.1415926/180;
 
   // // Motion 4: env: cabinet_crl2
-  // joint_group_positions[0] = -93 * 3.1415926 / 180;
-  // joint_group_positions[1] = 50 * 3.1415926/180;
-  // joint_group_positions[2] =  0 * 3.1415926/180;
-  // joint_group_positions[3] =  -85 * 3.1415926/180;
-  // joint_group_positions[4] =  0 * 3.1415926 / 180;
-  // joint_group_positions[5] =  135 * 3.1415926/180;
-  // joint_group_positions[6] =  41 *3.1415926/180;
+  joint_group_positions[0] = 0 * 3.1415926 / 180;
+  joint_group_positions[1] = 50 * 3.1415926/180;
+  joint_group_positions[2] =  0 * 3.1415926/180;
+  joint_group_positions[3] =  -85 * 3.1415926/180;
+  joint_group_positions[4] =  0 * 3.1415926 / 180;
+  joint_group_positions[5] =  135 * 3.1415926/180;
+  joint_group_positions[6] =  41 *3.1415926/180;
 
   // Motion 5: env: cabinet_crl2, end effecotr a little bit lower along z axis than Motion 4
-  // joint_group_positions[0] = -92 * 3.1415926 / 180;
+  // joint_group_positions[0] = 0 * 3.1415926 / 180;
   // joint_group_positions[1] = 54 * 3.1415926/180;
   // joint_group_positions[2] =  0 * 3.1415926/180;
   // joint_group_positions[3] =  -84 * 3.1415926/180;
@@ -504,13 +505,13 @@ int main(int argc, char** argv)
   // joint_group_positions[6] =  42 *3.1415926/180;
 
   // // Motion 6: env: cabinet_crl2, end effecotr a little bit lower along z axis than Motion 5
-  joint_group_positions[0] = 0 * 3.1415926 / 180;
-  joint_group_positions[1] = 52 * 3.1415926/180;
-  joint_group_positions[2] =  0 * 3.1415926/180;
-  joint_group_positions[3] =  -90 * 3.1415926/180;
-  joint_group_positions[4] =  0 * 3.1415926 / 180;
-  joint_group_positions[5] =  137 * 3.1415926/180;
-  joint_group_positions[6] =  44 *3.1415926/180;
+  // joint_group_positions[0] = 0 * 3.1415926 / 180;
+  // joint_group_positions[1] = 52 * 3.1415926/180;
+  // joint_group_positions[2] =  0 * 3.1415926/180;
+  // joint_group_positions[3] =  -90 * 3.1415926/180;
+  // joint_group_positions[4] =  0 * 3.1415926 / 180;
+  // joint_group_positions[5] =  137 * 3.1415926/180;
+  // joint_group_positions[6] =  44 *3.1415926/180;
 
   // Motion 6.2: env: cabinet_crl2, self motion of Motion 6
   // joint_group_positions[0] = 0 * 3.1415926 / 180;

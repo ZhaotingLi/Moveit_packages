@@ -72,7 +72,7 @@ int current_state_index = 1; // 1: reach into the goal   0: return to the start 
 // double pin1_x = 0;     // should set to zero during the whole loop test
 // double pin1_z = 0;
 double pin1_x = 0.5;      // in the case where only planning is tested
-double pin1_z = 0.38;
+double pin1_z = 0.51;     // 0.38, 0.42, 0.45, 0.48
 
 // valude of the optimized joint goal, which is published by the contact_detection_node_simplifiedModel node
 std::vector<double> optimized_joint_goal;
@@ -370,33 +370,31 @@ int main(int argc, char** argv)
   current_state->copyJointGroupPositions(joint_model_group, joint_group_positions);
   current_state->copyJointGroupPositions(joint_model_group, joint_start_state);
 
-  // joint goal postion if the optimized_goal_q is not available
-  // standard joint state without optimization
+
+  // pose 1  
   // joint_group_positions[0] = 0 * 3.1415926 / 180;
-  // joint_group_positions[1] = 52 * 3.1415926/180;
+  // joint_group_positions[1] = 50 * 3.1415926/180;
   // joint_group_positions[2] =  0 * 3.1415926/180;
-  // joint_group_positions[3] =  -90 * 3.1415926/180;
+  // joint_group_positions[3] =  -85 * 3.1415926/180;
   // joint_group_positions[4] =  0 * 3.1415926 / 180;
-  // joint_group_positions[5] =  137 * 3.1415926/180;
-  // joint_group_positions[6] =  44 *3.1415926/180;
+  // joint_group_positions[5] =  135 * 3.1415926/180;
+  // joint_group_positions[6] =  41 *3.1415926/180;
 
-
-  // optimized joint state in mode 1
-  // -0.08979270079669528, 0.8643770043246566, 0.08706532937078018, -1.7446617106558027, -0.14915937795513548, 2.764733060796357, 0.8636804622796009
-  joint_group_positions[0] = -0.08979270079669528;
-  joint_group_positions[1] = 0.8643770043246566;
-  joint_group_positions[2] =  0.08706532937078018;
-  joint_group_positions[3] =  -1.7446617106558027;
-  joint_group_positions[4] =  -0.14915937795513548;
-  joint_group_positions[5] =  2.764733060796357;
-  joint_group_positions[6] =  0.8636804622796009;
+  // pose 2 
+  joint_group_positions[0] = -3 * 3.1415926 / 180;
+  joint_group_positions[1] = 46 * 3.1415926/180;
+  joint_group_positions[2] =  4 * 3.1415926/180;
+  joint_group_positions[3] =  -90 * 3.1415926/180;
+  joint_group_positions[4] =  0 * 3.1415926 / 180;
+  joint_group_positions[5] =  125 * 3.1415926/180;
+  joint_group_positions[6] =  40 *3.1415926/180;
 
 
   moveit::core::RobotStatePtr robot_state_start(
     new moveit::core::RobotState(planning_scene_monitor::LockedPlanningSceneRO(planning_scene_monitor)->getCurrentState()));
 
   bool success = false;  // whether a single plan finds a feasible trajectory solution
-
+  int pre_state_index = 1; 
   /*  Core function of this file: plan a path according to current status  */
   // need to update via other ros nodes: (1) the joint goal positions (2) planner interal parameter (pins state) (3) current state (4) the position of the elastic band (ready to be removed if not accurate)
   while(!finished){
@@ -417,7 +415,12 @@ int main(int argc, char** argv)
 
     /*[Begin] Method02 use planning pipeline, planner is executed in this node, so we can modify the planner config in real time*/
     planning_interface::MotionPlanRequest req;
-    planning_interface::MotionPlanResponse res; 
+    planning_interface::MotionPlanResponse res;
+
+    pre_state_index = current_state_index;
+
+    std::cout<<"pre_state_index: "<< pre_state_index << std::endl;
+
     if(current_state_index == 1){  // if the current state is 1, then we need to plan to the goal
       if(pin1_z!= 0){   // if the pin1_z is not zero, then we need to put the elastic band into the planning process
         std::cout<<"put the elastic band into planning process"<<std::endl;
@@ -570,7 +573,7 @@ int main(int argc, char** argv)
       my_plan.start_state_ = response.trajectory_start;
       my_plan.planning_time_ = 10;
       move_group_interface.execute(my_plan);
-      move_group_interface.move();
+      // move_group_interface.move();
 
       // remove current belief of the band, we will add it before planning
       if(current_state_index == 0 && pin1_z!=0){
@@ -579,8 +582,16 @@ int main(int argc, char** argv)
         to_removed_list.push_back(to_removed_object);
         planning_scene_interface.removeCollisionObjects(to_removed_list);
       }
+
+      if(current_state_index == 2 && pre_state_index == 1){
+        current_state_index = 0; // move to start
+      }else if(pre_state_index == 0){
+        finished = true;
+      }
     }
     // // move_group_interface.move();
+
+    
 
   }
 
